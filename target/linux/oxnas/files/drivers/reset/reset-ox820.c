@@ -98,7 +98,7 @@ static int __init ox820_reset_init(void)
 				     ox820_reset_probe);
 }
 /*
- * reset controller does not support probe deferral, so it has to be 
+ * reset controller does not support probe deferral, so it has to be
  * initialized before any user, in particular, PCIE uses subsys_initcall.
  */
 arch_initcall(ox820_reset_init);

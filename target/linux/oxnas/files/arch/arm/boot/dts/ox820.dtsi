@@ -195,7 +195,7 @@
 		/* format: bus address mask, interrupt specifier mask */
 		/* each bit 1 means need match, 0 means ignored when match */
 		interrupt-map-mask = <0 0 0 0>;
-		/* format: a list of: bus address, interrupt specifier, 
+		/* format: a list of: bus address, interrupt specifier,
 		 * parent interrupt controller & specifier */
 		interrupt-map = <0 0 0 0 &gic 0 19 0x304>;
 
@@ -233,7 +233,7 @@
 		/* format: bus address mask, interrupt specifier mask */
 		/* each bit 1 means need match, 0 means ignored when match */
 		interrupt-map-mask = <0 0 0 0>;
-		/* format: a list of: bus address, interrupt specifier, 
+		/* format: a list of: bus address, interrupt specifier,
 		 * parent interrupt controller & specifier */
 		interrupt-map = <0 0 0 0 &gic 0 20 0x304>;
 

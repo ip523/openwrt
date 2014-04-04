@@ -16,8 +16,7 @@
 #include <mach/iomap.h>
 #include <mach/hardware.h>
 #include <mach/utils.h>
-
-extern struct smp_operations ox820_smp_ops;
+#include <mach/smp.h>
 
 static struct map_desc ox820_io_desc[] __initdata = {
 	{
@@ -80,7 +79,7 @@ int ox820_gmac_init(struct platform_device *pdev)
 
 	value = readl(SYS_CTRL_GMAC_CTRL);
 
-	/* Enable GMII_GTXCLK to follow GMII_REFCLK - required for gigabit PHY */
+	/* Enable GMII_GTXCLK to follow GMII_REFCLK, required for gigabit PHY */
 	value |= BIT(SYS_CTRL_GMAC_CKEN_GTX);
 	/* Use simple mux for 25/125 Mhz clock switching */
 	value |= BIT(SYS_CTRL_GMAC_SIMPLE_MUX);
@@ -137,7 +136,7 @@ static int __init ox820_ether_init(void)
 	if (!pdev)
 		return -EINVAL;
 
-	pdata= kzalloc(sizeof(struct plat_gmac_data), GFP_KERNEL);
+	pdata = kzalloc(sizeof(struct plat_gmac_data), GFP_KERNEL);
 	if (!pdata)
 		return -ENOMEM;
 
@@ -150,20 +149,20 @@ static int __init ox820_ether_init(void)
 
 static void __init ox820_dt_init(void)
 {
-        int ret;
+	int ret;
 
-        ret = of_platform_populate(NULL, of_default_bus_match_table, NULL,
-                                   NULL);
-        if (ret) {
-                pr_err("of_platform_populate failed: %d\n", ret);
-                BUG();
-        }
+	ret = of_platform_populate(NULL, of_default_bus_match_table, NULL,
+					NULL);
 
-        ret = ox820_ether_init();
+	if (ret) {
+		pr_err("of_platform_populate failed: %d\n", ret);
+		BUG();
+	}
 
-        if (ret) {
-                pr_info("ox820_ether_init failed: %d\n", ret);
-        }
+	ret = ox820_ether_init();
+
+	if (ret)
+		pr_info("ox820_ether_init failed: %d\n", ret);
 }
 
 static void __init ox820_timer_init(void)
@@ -178,56 +177,54 @@ void ox820_init_early(void)
 
 }
 
-void ox820_assert_system_reset(enum reboot_mode mode, const char * cmd)
+void ox820_assert_system_reset(enum reboot_mode mode, const char *cmd)
 {
 	u32 value;
 
-	// Assert reset to cores as per power on defaults
-	// Don't touch the DDR interface as things will come to an impromptu stop
-	// NB Possibly should be asserting reset for PLLB, but there are timing
-	//    concerns here according to the docs
-
-	value =
-		BIT(SYS_CTRL_RST_COPRO     ) |
-		BIT(SYS_CTRL_RST_USBHS     ) |
-		BIT(SYS_CTRL_RST_USBHSPHYA ) |
-		BIT(SYS_CTRL_RST_MACA      ) |
-		BIT(SYS_CTRL_RST_PCIEA     ) |
-		BIT(SYS_CTRL_RST_SGDMA     ) |
-		BIT(SYS_CTRL_RST_CIPHER    ) |
-		BIT(SYS_CTRL_RST_SATA      ) |
-		BIT(SYS_CTRL_RST_SATA_LINK ) |
-		BIT(SYS_CTRL_RST_SATA_PHY  ) |
-		BIT(SYS_CTRL_RST_PCIEPHY   ) |
-		BIT(SYS_CTRL_RST_STATIC    ) |
-		BIT(SYS_CTRL_RST_UART1     ) |
-		BIT(SYS_CTRL_RST_UART2     ) |
-		BIT(SYS_CTRL_RST_MISC      ) |
-		BIT(SYS_CTRL_RST_I2S       ) |
-		BIT(SYS_CTRL_RST_SD        ) |
-		BIT(SYS_CTRL_RST_MACB      ) |
-		BIT(SYS_CTRL_RST_PCIEB     ) |
-		BIT(SYS_CTRL_RST_VIDEO     ) |
-		BIT(SYS_CTRL_RST_USBHSPHYB ) |
-		BIT(SYS_CTRL_RST_USBDEV    );
+/* Assert reset to cores as per power on defaults
+ * Don't touch the DDR interface as things will come to an impromptu stop
+ * NB Possibly should be asserting reset for PLLB, but there are timing
+ *    concerns here according to the docs */
+	value = BIT(SYS_CTRL_RST_COPRO)		|
+		BIT(SYS_CTRL_RST_USBHS)		|
+		BIT(SYS_CTRL_RST_USBHSPHYA)	|
+		BIT(SYS_CTRL_RST_MACA)		|
+		BIT(SYS_CTRL_RST_PCIEA)		|
+		BIT(SYS_CTRL_RST_SGDMA)		|
+		BIT(SYS_CTRL_RST_CIPHER)	|
+		BIT(SYS_CTRL_RST_SATA)		|
+		BIT(SYS_CTRL_RST_SATA_LINK)	|
+		BIT(SYS_CTRL_RST_SATA_PHY)	|
+		BIT(SYS_CTRL_RST_PCIEPHY)	|
+		BIT(SYS_CTRL_RST_STATIC)	|
+		BIT(SYS_CTRL_RST_UART1)		|
+		BIT(SYS_CTRL_RST_UART2)		|
+		BIT(SYS_CTRL_RST_MISC)		|
+		BIT(SYS_CTRL_RST_I2S)		|
+		BIT(SYS_CTRL_RST_SD)		|
+		BIT(SYS_CTRL_RST_MACB)		|
+		BIT(SYS_CTRL_RST_PCIEB)		|
+		BIT(SYS_CTRL_RST_VIDEO)		|
+		BIT(SYS_CTRL_RST_USBHSPHYB)	|
+		BIT(SYS_CTRL_RST_USBDEV);
 
 	writel(value, SYS_CTRL_RST_SET_CTRL);
 
-	// Release reset to cores as per power on defaults
+	/* Release reset to cores as per power on defaults */
 	writel(BIT(SYS_CTRL_RST_GPIO), SYS_CTRL_RST_CLR_CTRL);
 
-	// Disable clocks to cores as per power-on defaults - must leave DDR
-	// related clocks enabled otherwise we'll stop rather abruptly.
+	/* Disable clocks to cores as per power-on defaults - must leave DDR
+	 * related clocks enabled otherwise we'll stop rather abruptly. */
 	value =
-		BIT(SYS_CTRL_CLK_COPRO) 	|
-		BIT(SYS_CTRL_CLK_DMA)   	|
+		BIT(SYS_CTRL_CLK_COPRO)		|
+		BIT(SYS_CTRL_CLK_DMA)		|
 		BIT(SYS_CTRL_CLK_CIPHER)	|
-		BIT(SYS_CTRL_CLK_SD)  		|
-		BIT(SYS_CTRL_CLK_SATA)  	|
-		BIT(SYS_CTRL_CLK_I2S)   	|
-		BIT(SYS_CTRL_CLK_USBHS) 	|
-		BIT(SYS_CTRL_CLK_MAC)   	|
-		BIT(SYS_CTRL_CLK_PCIEA)   	|
+		BIT(SYS_CTRL_CLK_SD)		|
+		BIT(SYS_CTRL_CLK_SATA)		|
+		BIT(SYS_CTRL_CLK_I2S)		|
+		BIT(SYS_CTRL_CLK_USBHS)		|
+		BIT(SYS_CTRL_CLK_MAC)		|
+		BIT(SYS_CTRL_CLK_PCIEA)		|
 		BIT(SYS_CTRL_CLK_STATIC)	|
 		BIT(SYS_CTRL_CLK_MACB)		|
 		BIT(SYS_CTRL_CLK_PCIEB)		|
@@ -236,9 +233,9 @@ void ox820_assert_system_reset(enum reboot_mode mode, const char * cmd)
 
 	writel(value, SYS_CTRL_CLK_CLR_CTRL);
 
-	// Enable clocks to cores as per power-on defaults
+	/* Enable clocks to cores as per power-on defaults */
 
-	// Set sys-control pin mux'ing as per power-on defaults
+	/* Set sys-control pin mux'ing as per power-on defaults */
 	writel(0, SYS_CTRL_SECONDARY_SEL);
 	writel(0, SYS_CTRL_TERTIARY_SEL);
 	writel(0, SYS_CTRL_QUATERNARY_SEL);
@@ -253,9 +250,9 @@ void ox820_assert_system_reset(enum reboot_mode mode, const char * cmd)
 	writel(0, SYS_CTRL_ALTERNATIVE_SEL);
 	writel(0, SYS_CTRL_PULLUP_SEL);
 
-	// No need to save any state, as the ROM loader can determine whether reset
-	// is due to power cycling or programatic action, just hit the (self-
-	// clearing) CPU reset bit of the block reset register
+	/* No need to save any state, as the ROM loader can determine whether
+	 * reset is due to power cycling or programatic action, just hit the
+	 * (self-clearing) CPU reset bit of the block reset register */
 	value =
 		BIT(SYS_CTRL_RST_SCU) |
 		BIT(SYS_CTRL_RST_ARM0) |

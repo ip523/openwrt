@@ -19,7 +19,7 @@
 #include <asm/smp_scu.h>
 #include <asm/tlbflush.h>
 #include <asm/cputype.h>
-#include <asm/delay.h>
+#include <linux/delay.h>
 #include <asm/fiq.h>
 
 #include <linux/irqchip/arm-gic.h>
@@ -58,12 +58,6 @@ static struct fiq_handler fh = {
 	.name = "oxnas-fiq"
 };
 
-extern unsigned char ox820_fiq_start, ox820_fiq_end;
-extern void v6_dma_map_area(const void *, size_t, int);
-extern void v6_dma_unmap_area(const void *, size_t, int);
-extern void v6_dma_flush_range(const void *, const void *);
-extern void v6_flush_kern_dcache_area(void *, size_t);
-
 DEFINE_PER_CPU(struct fiq_req, fiq_data);
 
 static inline void __cpuinit ox820_set_fiq_regs(unsigned int cpu)
@@ -90,9 +84,8 @@ static void __init ox820_init_fiq(void)
 
 	ret = claim_fiq(&fh);
 
-	if (ret) {
+	if (ret)
 		return;
-	}
 
 	set_fiq_handler(fiqhandler_start, fiqhandler_length);
 
@@ -109,7 +102,7 @@ void fiq_dma_map_area(const void *addr, size_t size, int dir)
 
 	raw_local_irq_save(flags);
 	/* currently, not possible to take cpu0 down, so only check cpu1 */
-	if(!cpu_online(1)) {
+	if (!cpu_online(1)) {
 		raw_local_irq_restore(flags);
 		v6_dma_map_area(addr, size, dir);
 		return;
@@ -124,9 +117,8 @@ void fiq_dma_map_area(const void *addr, size_t size, int dir)
 	writel_relaxed(FIQ_GENERATE, req->reg);
 
 	v6_dma_map_area(addr, size, dir);
-	while (req->flags) {
+	while (req->flags)
 		barrier();
-	}
 
 	raw_local_irq_restore(flags);
 }
@@ -138,7 +130,7 @@ void fiq_dma_unmap_area(const void *addr, size_t size, int dir)
 
 	raw_local_irq_save(flags);
 	/* currently, not possible to take cpu0 down, so only check cpu1 */
-	if(!cpu_online(1)) {
+	if (!cpu_online(1)) {
 		raw_local_irq_restore(flags);
 		v6_dma_unmap_area(addr, size, dir);
 		return;
@@ -153,9 +145,8 @@ void fiq_dma_unmap_area(const void *addr, size_t size, int dir)
 	writel_relaxed(FIQ_GENERATE, req->reg);
 
 	v6_dma_unmap_area(addr, size, dir);
-	while (req->flags) {
+	while (req->flags)
 		barrier();
-	}
 
 	raw_local_irq_restore(flags);
 }
@@ -167,7 +158,7 @@ void fiq_dma_flush_range(const void *start, const void *end)
 
 	raw_local_irq_save(flags);
 	/* currently, not possible to take cpu0 down, so only check cpu1 */
-	if(!cpu_online(1)) {
+	if (!cpu_online(1)) {
 		raw_local_irq_restore(flags);
 		v6_dma_flush_range(start, end);
 		return;
@@ -184,9 +175,8 @@ void fiq_dma_flush_range(const void *start, const void *end)
 
 	v6_dma_flush_range(start, end);
 
-	while (req->flags) {
+	while (req->flags)
 		barrier();
-	}
 
 	raw_local_irq_restore(flags);
 }
@@ -271,7 +261,7 @@ int __cpuinit ox820_boot_secondary(unsigned int cpu, struct task_struct *idle)
 
 void *scu_base_addr(void)
 {
-	return  IOMEM(OXNAS_SCU_BASE_VA);
+	return IOMEM(OXNAS_SCU_BASE_VA);
 }
 
 /*

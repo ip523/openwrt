@@ -18,7 +18,8 @@
  */
 ENTRY(ox820_secondary_startup)
 	mov r4, #0
-	mcr p15, 0, r4, c7, c7, 0 @ invalidate both caches and branch target cache
+	/* invalidate both caches and branch target cache */
+	mcr p15, 0, r4, c7, c7, 0
 	/*
 	 * we've been released from the holding pen: secondary_stack
 	 * should now contain the SVC stack for this core

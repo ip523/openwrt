@@ -1,7 +1,7 @@
 #ifndef __MACH_OXNAS_IOMAP_H
 #define __MACH_OXNAS_IOMAP_H
 
-#include <asm/sizes.h>
+#include <linux/sizes.h>
 
 #define OXNAS_UART1_BASE	0x44200000
 #define OXNAS_UART1_SIZE	SZ_32
