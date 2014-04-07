@@ -54,7 +54,7 @@ static int oxnas_nand_probe(struct platform_device *pdev)
 }
 
 /* allow users to override the partition in DT using the cmdline */
-static const char *part_probes[] = { "cmdlinepart", "ofpart", NULL };
+static const char * const part_probes[] = { "cmdlinepart", "ofpart", NULL };
 
 static struct platform_nand_data oxnas_nand_data = {
 	.chip = {
