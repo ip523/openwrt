@@ -2,19 +2,17 @@
  * Copyright (C) 2010 Broadcom
  * Copyright (C) 2012 Stephen Warren
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2, as published by the Free Software Foundation.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <linux/clk-provider.h>
@@ -24,7 +22,7 @@
 #include <linux/delay.h>
 #include <linux/stringify.h>
 #include <linux/reset.h>
-#include <asm/io.h>
+#include <linux/io.h>
 #include <mach/hardware.h>
 #include <mach/utils.h>
 
@@ -44,12 +42,13 @@ static unsigned long plla_clk_recalc_rate(struct clk_hw *hw,
 	outdiv += 1;
 	fbdiv = readl_relaxed(SYS_CTRL_PLLA_CTRL1);
 
-	/* seems we will not be here when pll is bypassed, so ignore this case */
+	/* seems we will not be here when pll is bypassed, so ignore this 
+	 * case */
 
 	return fin / MHZ * fbdiv / (refdiv * outdiv) / 32768 * MHZ;
 }
 
-static const char *pll_clk_parents[] = {
+static const char * const pll_clk_parents[] = {
 	"oscillator",
 };
 
@@ -159,11 +158,11 @@ static struct clk_ops std_clk_ops = {
 	.is_enabled = std_clk_is_enabled,
 };
 
-static const char *std_clk_parents[] = {
+static const char * const std_clk_parents[] = {
 	"oscillator",
 };
 
-static const char *eth_parents[] = {
+static const char * const eth_parents[] = {
 	"gmacclk",
 };
 
@@ -182,7 +181,8 @@ static struct clk_std clk_##__clk = {			\
 	},						\
 }
 
-#define DECLARE_STD_CLK(__clk, __bit) DECLARE_STD_CLKP(__clk, __bit, std_clk_parents)
+#define DECLARE_STD_CLK(__clk, __bit) DECLARE_STD_CLKP(__clk, __bit, \
+							std_clk_parents)
 
 DECLARE_STD_CLK(leon, 0);
 DECLARE_STD_CLK(dma_sgdma, 1);

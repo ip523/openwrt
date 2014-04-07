@@ -3,20 +3,19 @@
  *
  * Copyright (C) 2009 Oxford Semiconductor Ltd
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2, as published by the Free Software Foundation.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include <linux/init.h>
 #include <linux/interrupt.h>
 #include <linux/irq.h>
@@ -63,7 +62,8 @@ static void __init rps_clocksource_init(void __iomem *base, ulong ref_rate)
 	clock_rate = ref_rate / 16;
 
 	iowrite32(TIMER_MAX_VAL, base + TIMER_LOAD);
-	iowrite32(TIMER_PERIODIC | TIMER_ENABLE | TIMER_DIV16, base + TIMER_CTRL);
+	iowrite32(TIMER_PERIODIC | TIMER_ENABLE | TIMER_DIV16,
+			base + TIMER_CTRL);
 
 	ret = clocksource_mmio_init(base + TIMER_CURR, "rps_clocksource_timer",
 					clock_rate, 250, TIMER_BITS,
@@ -82,12 +82,12 @@ static void __init rps_timer_init(struct device_node *np)
 
 	refclk = of_clk_get(np, 0);
 
-	if(IS_ERR(refclk) || clk_prepare_enable(refclk))
+	if (IS_ERR(refclk) || clk_prepare_enable(refclk))
 		panic("rps_timer_init: failed to get refclk\n");
 	ref_rate = clk_get_rate(refclk);
 
 	base = of_iomap(np, 0);
-	if(!base)
+	if (!base)
 		panic("rps_timer_init: failed to map io\n");
 
 	rps_clocksource_init(base + TIMER2_OFFSET, ref_rate);
