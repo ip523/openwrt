@@ -5,7 +5,7 @@
 #include <linux/of_irq.h>
 #include <linux/irqchip/chained_irq.h>
 #include <linux/err.h>
-#include <asm/io.h>
+#include <linux/io.h>
 
 #include "irqchip.h"
 
@@ -52,7 +52,8 @@ static struct irq_chip rps_chip = {
 static int rps_irq_domain_xlate(struct irq_domain *d,
 				struct device_node *controller,
 				const u32 *intspec, unsigned int intsize,
-				unsigned long *out_hwirq, unsigned int *out_type)
+				unsigned long *out_hwirq,
+				unsigned int *out_type)
 {
 	if (d->of_node != controller)
 		return -EINVAL;
