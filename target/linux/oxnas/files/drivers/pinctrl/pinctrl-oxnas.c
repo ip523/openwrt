@@ -37,9 +37,9 @@
 struct oxnas_gpio_chip {
 	struct gpio_chip	chip;
 	struct pinctrl_gpio_range range;
-	void __iomem		*regbase;	/* GPIOA/B virtual address */
-	void __iomem		*ctrlbase;	/* SYS/SEC_CTRL virtual address */
-	struct irq_domain	*domain;	/* associated irq domain */
+	void __iomem		*regbase;  /* GPIOA/B virtual address */
+	void __iomem		*ctrlbase; /* SYS/SEC_CTRL virtual address */
+	struct irq_domain	*domain;   /* associated irq domain */
 };
 
 #define to_oxnas_gpio_chip(c) container_of(c, struct oxnas_gpio_chip, chip)
@@ -165,7 +165,8 @@ static const inline struct oxnas_pin_group *oxnas_pinctrl_find_group_by_name(
 			continue;
 
 		grp = &info->groups[i];
-		dev_dbg(info->dev, "%s: %d 0:%d\n", name, grp->npins, grp->pins[0]);
+		dev_dbg(info->dev, "%s: %d 0:%d\n", name, grp->npins,
+			grp->pins[0]);
 		break;
 	}
 
@@ -231,7 +232,8 @@ static int oxnas_dt_node_to_map(struct pinctrl_dev *pctldev,
 	}
 
 	map_num += grp->npins;
-	new_map = devm_kzalloc(pctldev->dev, sizeof(*new_map) * map_num, GFP_KERNEL);
+	new_map = devm_kzalloc(pctldev->dev, sizeof(*new_map) * map_num,
+			       GFP_KERNEL);
 	if (!new_map)
 		return -ENOMEM;
 
@@ -304,8 +306,8 @@ static unsigned pin_to_mask(unsigned int pin)
 
 static void oxnas_mux_disable_interrupt(void __iomem *pio, unsigned mask)
 {
-	oxnas_register_clear_mask( pio + RE_IRQ_ENABLE, mask);
-	oxnas_register_clear_mask( pio + FE_IRQ_ENABLE, mask);
+	oxnas_register_clear_mask(pio + RE_IRQ_ENABLE, mask);
+	oxnas_register_clear_mask(pio + FE_IRQ_ENABLE, mask);
 }
 
 static unsigned oxnas_mux_get_pullup(void __iomem *pio, unsigned pin)
@@ -361,7 +363,7 @@ static void oxnas_mux_set_debounce(void __iomem *pio, unsigned mask,
 
 static void oxnas_mux_set_func2(void __iomem *cio, unsigned mask)
 {
-	/* in fact, SECONDARY takes precedence, so clear others is not necessary */
+/* in fact, SECONDARY takes precedence, so clear others is not necessary */
 	oxnas_register_set_mask(cio + PINMUX_SECONDARY_SEL, mask);
 	oxnas_register_clear_mask(cio + PINMUX_TERTIARY_SEL, mask);
 	oxnas_register_clear_mask(cio + PINMUX_QUATERNARY_SEL, mask);
@@ -430,11 +432,14 @@ static enum oxnas_mux oxnas_mux_get_func(void __iomem *cio, unsigned mask)
 }
 
 
-static void oxnas_pin_dbg(const struct device *dev, const struct oxnas_pmx_pin *pin)
+static void oxnas_pin_dbg(const struct device *dev,
+			  const struct oxnas_pmx_pin *pin)
 {
 	if (pin->mux) {
-		dev_dbg(dev, "MF_%c%d configured as periph%c with conf = 0x%lu\n",
-			pin->bank + 'A', pin->pin, pin->mux - 1 + 'A', pin->conf);
+		dev_dbg(dev,
+			"MF_%c%d configured as periph%c with conf = 0x%lu\n",
+			pin->bank + 'A', pin->pin, pin->mux - 1 + 'A',
+			pin->conf);
 	} else {
 		dev_dbg(dev, "MF_%c%d configured as gpio with conf = 0x%lu\n",
 			pin->bank + 'A', pin->pin, pin->conf);
@@ -479,7 +484,8 @@ static int pin_check_config(struct oxnas_pinctrl *info, const char *name,
 	return 0;
 }
 
-static void oxnas_mux_gpio_enable(void __iomem *cio, void __iomem *pio, unsigned mask, bool input)
+static void oxnas_mux_gpio_enable(void __iomem *cio, void __iomem *pio,
+				  unsigned mask, bool input)
 {
 	oxnas_mux_set_gpio(cio, mask);
 	if (input)
@@ -488,14 +494,15 @@ static void oxnas_mux_gpio_enable(void __iomem *cio, void __iomem *pio, unsigned
 		writel_relaxed(mask, pio + OUTPUT_EN_SET);
 }
 
-static void oxnas_mux_gpio_disable(void __iomem *cio, void __iomem *pio, unsigned mask)
+static void oxnas_mux_gpio_disable(void __iomem *cio, void __iomem *pio,
+				   unsigned mask)
 {
 	/* when switch to other function,  gpio is disabled automatically */
 	return;
 }
 
 static int oxnas_pmx_enable(struct pinctrl_dev *pctldev, unsigned selector,
-			   unsigned group)
+			    unsigned group)
 {
 	struct oxnas_pinctrl *info = pinctrl_dev_get_drvdata(pctldev);
 	const struct oxnas_pmx_pin *pins_conf = info->groups[group].pins_conf;
@@ -556,7 +563,7 @@ static int oxnas_pmx_enable(struct pinctrl_dev *pctldev, unsigned selector,
 }
 
 static void oxnas_pmx_disable(struct pinctrl_dev *pctldev, unsigned selector,
-			   unsigned group)
+			      unsigned group)
 {
 	struct oxnas_pinctrl *info = pinctrl_dev_get_drvdata(pctldev);
 	const struct oxnas_pmx_pin *pins_conf = info->groups[group].pins_conf;
@@ -585,7 +592,7 @@ static int oxnas_pmx_get_funcs_count(struct pinctrl_dev *pctldev)
 }
 
 static const char *oxnas_pmx_get_func_name(struct pinctrl_dev *pctldev,
-					  unsigned selector)
+					   unsigned selector)
 {
 	struct oxnas_pinctrl *info = pinctrl_dev_get_drvdata(pctldev);
 
@@ -593,8 +600,8 @@ static const char *oxnas_pmx_get_func_name(struct pinctrl_dev *pctldev,
 }
 
 static int oxnas_pmx_get_groups(struct pinctrl_dev *pctldev, unsigned selector,
-			       const char * const **groups,
-			       unsigned * const num_groups)
+				const char * const **groups,
+				unsigned * const num_groups)
 {
 	struct oxnas_pinctrl *info = pinctrl_dev_get_drvdata(pctldev);
 
@@ -605,8 +612,8 @@ static int oxnas_pmx_get_groups(struct pinctrl_dev *pctldev, unsigned selector,
 }
 
 static int oxnas_gpio_request_enable(struct pinctrl_dev *pctldev,
-				    struct pinctrl_gpio_range *range,
-				    unsigned offset)
+				     struct pinctrl_gpio_range *range,
+				     unsigned offset)
 {
 	struct oxnas_pinctrl *npct = pinctrl_dev_get_drvdata(pctldev);
 	struct oxnas_gpio_chip *oxnas_chip;
@@ -637,8 +644,8 @@ static int oxnas_gpio_request_enable(struct pinctrl_dev *pctldev,
 }
 
 static void oxnas_gpio_disable_free(struct pinctrl_dev *pctldev,
-				   struct pinctrl_gpio_range *range,
-				   unsigned offset)
+				    struct pinctrl_gpio_range *range,
+				    unsigned offset)
 {
 	struct oxnas_pinctrl *npct = pinctrl_dev_get_drvdata(pctldev);
 
@@ -664,7 +671,8 @@ static int oxnas_pinconf_get(struct pinctrl_dev *pctldev,
 	unsigned pin;
 	int div;
 
-	dev_dbg(info->dev, "%s:%d, pin_id=%d, config=0x%lx", __func__, __LINE__, pin_id, *config);
+	dev_dbg(info->dev, "%s:%d, pin_id=%d, config=0x%lx", __func__,
+		__LINE__, pin_id, *config);
 	pio = pin_to_gpioctrl(info, pin_to_bank(pin_id));
 	pin = pin_id % MAX_NB_GPIO_PER_BANK;
 
@@ -680,9 +688,8 @@ static int oxnas_pinconf_get(struct pinctrl_dev *pctldev,
 }
 
 static int oxnas_pinconf_set(struct pinctrl_dev *pctldev,
-                             unsigned pin_id, unsigned long *configs,
-                             unsigned num_configs)
-
+			     unsigned pin_id, unsigned long *configs,
+			     unsigned num_configs)
 {
 	struct oxnas_pinctrl *info = pinctrl_dev_get_drvdata(pctldev);
 	unsigned mask;
@@ -697,8 +704,8 @@ static int oxnas_pinconf_set(struct pinctrl_dev *pctldev,
 		config = configs[i];
 
 		dev_dbg(info->dev,
-		        "%s:%d, pin_id=%d, config=0x%lx",
-		        __func__, __LINE__, pin_id, config);
+			"%s:%d, pin_id=%d, config=0x%lx",
+			__func__, __LINE__, pin_id, config);
 
 		if ((config & PULL_UP) && (config & PULL_DOWN))
 			return -EINVAL;
@@ -741,7 +748,7 @@ static struct pinctrl_desc oxnas_pinctrl_desc = {
 static const char *gpio_compat = "plxtech,nas782x-gpio";
 
 static void oxnas_pinctrl_child_count(struct oxnas_pinctrl *info,
-				     struct device_node *np)
+				      struct device_node *np)
 {
 	struct device_node *child;
 
@@ -756,7 +763,7 @@ static void oxnas_pinctrl_child_count(struct oxnas_pinctrl *info,
 }
 
 static int oxnas_pinctrl_mux_mask(struct oxnas_pinctrl *info,
-				 struct device_node *np)
+				  struct device_node *np)
 {
 	int ret = 0;
 	int size;
@@ -770,7 +777,8 @@ static int oxnas_pinctrl_mux_mask(struct oxnas_pinctrl *info,
 
 	size /= sizeof(*list);
 	if (!size || size % info->nbanks) {
-		dev_err(info->dev, "wrong mux mask array should be by %d\n", info->nbanks);
+		dev_err(info->dev, "wrong mux mask array should be by %d\n",
+			info->nbanks);
 		return -EINVAL;
 	}
 	info->nmux = size / info->nbanks;
@@ -789,8 +797,8 @@ static int oxnas_pinctrl_mux_mask(struct oxnas_pinctrl *info,
 }
 
 static int oxnas_pinctrl_parse_groups(struct device_node *np,
-				     struct oxnas_pin_group *grp,
-				     struct oxnas_pinctrl *info, u32 index)
+				      struct oxnas_pin_group *grp,
+				      struct oxnas_pinctrl *info, u32 index)
 {
 	struct oxnas_pmx_pin *pin;
 	int size;
@@ -810,12 +818,14 @@ static int oxnas_pinctrl_parse_groups(struct device_node *np,
 	/* we do not check return since it's safe node passed down */
 	size /= sizeof(*list);
 	if (!size || size % 4) {
-		dev_err(info->dev, "wrong pins number or pins and configs should be by 4\n");
+		dev_err(info->dev, "wrong pins number or pins and configs"
+			" should be divisible by 4\n");
 		return -EINVAL;
 	}
 
 	grp->npins = size / 4;
-	pin = grp->pins_conf = devm_kzalloc(info->dev, grp->npins * sizeof(struct oxnas_pmx_pin),
+	pin = grp->pins_conf = devm_kzalloc(info->dev,
+				grp->npins * sizeof(struct oxnas_pmx_pin),
 				GFP_KERNEL);
 	grp->pins = devm_kzalloc(info->dev, grp->npins * sizeof(unsigned int),
 				GFP_KERNEL);
@@ -907,21 +917,21 @@ static int oxnas_pinctrl_probe_dt(struct platform_device *pdev,
 
 	dev_dbg(&pdev->dev, "mux-mask\n");
 	tmp = info->mux_mask;
-	for (i = 0; i < info->nbanks; i++) {
-		for (j = 0; j < info->nmux; j++, tmp++) {
+	for (i = 0; i < info->nbanks; i++)
+		for (j = 0; j < info->nmux; j++, tmp++)
 			dev_dbg(&pdev->dev, "%d:%d\t0x%x\n", i, j, tmp[0]);
-		}
-	}
 
 	dev_dbg(&pdev->dev, "nfunctions = %d\n", info->nfunctions);
 	dev_dbg(&pdev->dev, "ngroups = %d\n", info->ngroups);
-	info->functions = devm_kzalloc(&pdev->dev, info->nfunctions * sizeof(struct oxnas_pmx_func),
+	info->functions = devm_kzalloc(&pdev->dev, info->nfunctions *
+						sizeof(struct oxnas_pmx_func),
 					GFP_KERNEL);
 	if (!info->functions)
 		return -ENOMEM;
 
-	info->groups = devm_kzalloc(&pdev->dev, info->ngroups * sizeof(struct oxnas_pin_group),
-					GFP_KERNEL);
+	info->groups = devm_kzalloc(&pdev->dev, info->ngroups *
+					sizeof(struct oxnas_pin_group),
+				    GFP_KERNEL);
 	if (!info->groups)
 		return -ENOMEM;
 
@@ -965,7 +975,8 @@ static int oxnas_pinctrl_probe(struct platform_device *pdev)
 	 */
 	for (i = 0; i < info->nbanks; i++) {
 		if (!gpio_chips[i]) {
-			dev_warn(&pdev->dev, "GPIO chip %d not registered yet\n", i);
+			dev_warn(&pdev->dev,
+				 "GPIO chip %d not registered yet\n", i);
 			devm_kfree(&pdev->dev, info);
 			return -EPROBE_DEFER;
 		}
@@ -974,7 +985,8 @@ static int oxnas_pinctrl_probe(struct platform_device *pdev)
 	oxnas_pinctrl_desc.name = dev_name(&pdev->dev);
 	oxnas_pinctrl_desc.npins = info->nbanks * MAX_NB_GPIO_PER_BANK;
 	oxnas_pinctrl_desc.pins = pdesc =
-		devm_kzalloc(&pdev->dev, sizeof(*pdesc) * oxnas_pinctrl_desc.npins, GFP_KERNEL);
+		devm_kzalloc(&pdev->dev, sizeof(*pdesc) *
+				oxnas_pinctrl_desc.npins, GFP_KERNEL);
 
 	if (!oxnas_pinctrl_desc.pins)
 		return -ENOMEM;
@@ -982,7 +994,8 @@ static int oxnas_pinctrl_probe(struct platform_device *pdev)
 	for (i = 0 , k = 0; i < info->nbanks; i++) {
 		for (j = 0; j < MAX_NB_GPIO_PER_BANK; j++, k++) {
 			pdesc->number = k;
-			pdesc->name = kasprintf(GFP_KERNEL, "MF_%c%d", i + 'A', j);
+			pdesc->name = kasprintf(GFP_KERNEL, "MF_%c%d", i + 'A',
+						j);
 			pdesc++;
 		}
 	}
@@ -1027,7 +1040,7 @@ static int oxnas_gpio_request(struct gpio_chip *chip, unsigned offset)
 	int bank = chip->base / chip->ngpio;
 
 	dev_dbg(chip->dev, "%s:%d MF_%c%d(%d)\n", __func__, __LINE__,
-		 'A' + bank, offset, gpio);
+		'A' + bank, offset, gpio);
 
 	return pinctrl_request_gpio(gpio);
 }
@@ -1180,7 +1193,8 @@ static void gpio_irq_unmask(struct irq_data *d)
 static int gpio_irq_type(struct irq_data *d, unsigned type)
 {
 	if ((type & IRQ_TYPE_EDGE_BOTH) == 0) {
-		pr_warn("OX820: Unsupported type for irq %d\n", gpio_to_irq(d->irq));
+		pr_warn("OX820: Unsupported type for irq %d\n",
+			gpio_to_irq(d->irq));
 		return -EINVAL;
 	}
 	/* seems no way to set trigger type without enable irq, so leave it to unmask time */
@@ -1201,9 +1215,9 @@ static void gpio_irq_handler(unsigned irq, struct irq_desc *desc)
 	struct irq_chip *chip = irq_desc_get_chip(desc);
 	struct irq_data *idata = irq_desc_get_irq_data(desc);
 	struct oxnas_gpio_chip *oxnas_gpio = irq_data_get_irq_chip_data(idata);
-	void __iomem	*pio = oxnas_gpio->regbase;
-	unsigned long	isr;
-	int		n;
+	void __iomem *pio = oxnas_gpio->regbase;
+	unsigned long isr;
+	int n;
 
 	chained_irq_enter(chip, desc);
 	for (;;) {
@@ -1215,7 +1229,8 @@ static void gpio_irq_handler(unsigned irq, struct irq_desc *desc)
 		writel_relaxed(isr, pio + IRQ_PENDING);
 
 		for_each_set_bit(n, &isr, BITS_PER_LONG) {
-			generic_handle_irq(irq_find_mapping(oxnas_gpio->domain, n));
+			generic_handle_irq(irq_find_mapping(oxnas_gpio->domain,
+							    n));
 		}
 	}
 	chained_irq_exit(chip, desc);
@@ -1229,9 +1244,9 @@ static void gpio_irq_handler(unsigned irq, struct irq_desc *desc)
 static struct lock_class_key gpio_lock_class;
 
 static int oxnas_gpio_irq_map(struct irq_domain *h, unsigned int virq,
-							irq_hw_number_t hw)
+			      irq_hw_number_t hw)
 {
-	struct oxnas_gpio_chip	*oxnas_gpio = h->host_data;
+	struct oxnas_gpio_chip *oxnas_gpio = h->host_data;
 
 	irq_set_lockdep_class(virq, &gpio_lock_class);
 
@@ -1243,10 +1258,11 @@ static int oxnas_gpio_irq_map(struct irq_domain *h, unsigned int virq,
 }
 
 static int oxnas_gpio_irq_domain_xlate(struct irq_domain *d,
-				      struct device_node *ctrlr,
-				      const u32 *intspec, unsigned int intsize,
-				      irq_hw_number_t *out_hwirq,
-				      unsigned int *out_type)
+				       struct device_node *ctrlr,
+				       const u32 *intspec,
+				       unsigned int intsize,
+				       irq_hw_number_t *out_hwirq,
+				       unsigned int *out_type)
 {
 	struct oxnas_gpio_chip *oxnas_gpio = d->host_data;
 	int ret;
@@ -1274,7 +1290,8 @@ static struct irq_domain_ops oxnas_gpio_ops = {
 };
 
 static int oxnas_gpio_of_irq_setup(struct device_node *node,
-				  struct oxnas_gpio_chip *oxnas_gpio, unsigned int irq)
+				   struct oxnas_gpio_chip *oxnas_gpio,
+				   unsigned int irq)
 {
 	/* Disable irqs of this controller */
 	writel_relaxed(0, oxnas_gpio->regbase + RE_IRQ_ENABLE);
@@ -1282,7 +1299,7 @@ static int oxnas_gpio_of_irq_setup(struct device_node *node,
 
 	/* Setup irq domain */
 	oxnas_gpio->domain = irq_domain_add_linear(node, oxnas_gpio->chip.ngpio,
-						&oxnas_gpio_ops, oxnas_gpio);
+						   &oxnas_gpio_ops, oxnas_gpio);
 	if (!oxnas_gpio->domain)
 		panic("oxnas_gpio: couldn't allocate irq domain (DT).\n");
 
@@ -1368,7 +1385,8 @@ static int oxnas_gpio_probe(struct platform_device *pdev)
 	if (!of_property_read_u32(np, "#gpio-lines", &ngpio)) {
 		if (ngpio > MAX_NB_GPIO_PER_BANK)
 			pr_err("oxnas_gpio.%d, gpio-nb >= %d failback to %d\n",
-			       alias_idx, MAX_NB_GPIO_PER_BANK, MAX_NB_GPIO_PER_BANK);
+			       alias_idx, MAX_NB_GPIO_PER_BANK,
+			       MAX_NB_GPIO_PER_BANK);
 		else
 			chip->ngpio = ngpio;
 	}
