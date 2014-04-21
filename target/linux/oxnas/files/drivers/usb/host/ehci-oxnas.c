@@ -49,11 +49,13 @@ static void start_oxnas_usb_ehci(struct oxnas_hcd *oxnas)
 		/* enable ref600 */
 		clk_prepare_enable(oxnas->phyref);
 		/* 600MHz pllb divider for 12MHz */
-		writel(PLLB_DIV_INT(50) | PLLB_DIV_FRAC(0), SEC_CTRL_PLLB_DIV_CTRL);
+		writel(PLLB_DIV_INT(50) | PLLB_DIV_FRAC(0),
+			SEC_CTRL_PLLB_DIV_CTRL);
 
 	} else {
 		/* ref 300 divider for 12MHz */
-		writel(REF300_DIV_INT(25) | REF300_DIV_FRAC(0), SYS_CTRL_REF300_DIV);
+		writel(REF300_DIV_INT(25) | REF300_DIV_FRAC(0),
+			SYS_CTRL_REF300_DIV);
 	}
 
 	/* Ensure the USB block is properly reset */
@@ -80,7 +82,8 @@ static void start_oxnas_usb_ehci(struct oxnas_hcd *oxnas)
 	if (oxnas->use_pllb) /* use pllb clock */
 		writel(USB_CLK_INTERNAL | USB_INT_CLK_PLLB, SYS_CTRL_USB_CTRL);
 	else /* use ref300 derived clock */
-		writel(USB_CLK_INTERNAL | USB_INT_CLK_REF300, SYS_CTRL_USB_CTRL);
+		writel(USB_CLK_INTERNAL | USB_INT_CLK_REF300,
+			SYS_CTRL_USB_CTRL);
 
 	if (oxnas->use_phya) {
 		/* Configure USB PHYA as a host */
@@ -239,9 +242,11 @@ err_hcd:
 	stop_oxnas_usb_ehci(oxnas);
 err_irq:
 err_rst:
-	if (oxnas->phyref) clk_put(oxnas->phyref);
+	if (oxnas->phyref)
+		clk_put(oxnas->phyref);
 err_phyref:
-	if (oxnas->refsrc) clk_put(oxnas->refsrc);
+	if (oxnas->refsrc)
+		clk_put(oxnas->refsrc);
 err_refsrc:
 	clk_put(oxnas->clk);
 err_clk:
@@ -285,7 +290,7 @@ static struct platform_driver ehci_oxnas_driver = {
 	.driver.of_match_table	= oxnas_ehci_dt_ids,
 };
 
-static const struct ehci_driver_overrides oxnas_overrides __initdata = {
+static const struct ehci_driver_overrides oxnas_overrides __initconst = {
 	.reset = ehci_oxnas_reset,
 	.extra_priv_size = sizeof(struct oxnas_hcd),
 };
