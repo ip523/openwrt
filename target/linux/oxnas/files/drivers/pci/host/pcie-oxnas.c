@@ -100,8 +100,7 @@ enum {
 #define PCIE_SLAVE_BE(val)	((val) << PCIE_SLAVE_BE_SHIFT)
 #define PCIE_SLAVE_BE_MASK	PCIE_SLAVE_BE(0xF)
 
-struct oxnas_pcie_shared
-{
+struct oxnas_pcie_shared {
 	/* seems all access are serialized, no lock required */
 	int refcount;
 };
@@ -139,10 +138,10 @@ static inline struct oxnas_pcie *sys_to_pcie(struct pci_sys_data *sys)
 }
 
 
-static void inline set_out_lanes(struct oxnas_pcie *pcie, unsigned lanes)
+static inline void set_out_lanes(struct oxnas_pcie *pcie, unsigned lanes)
 {
 	oxnas_register_value_mask(pcie->outbound + PCIE_AHB_SLAVE_CTRL,
-	                          PCIE_SLAVE_BE_MASK, PCIE_SLAVE_BE(lanes));
+				  PCIE_SLAVE_BE_MASK, PCIE_SLAVE_BE(lanes));
 	wmb();
 }
 
@@ -161,13 +160,13 @@ static int oxnas_pcie_link_up(struct oxnas_pcie *pcie)
 
 static void __init oxnas_pcie_setup_hw(struct oxnas_pcie *pcie)
 {
-
-	 /* We won't have any inbound address translation. This allows PCI devices
-	 * to access anywhere in the AHB address map. Might be regarded as a bit
-	 * dangerous, but let's get things working before we worry about that
+	/* We won't have any inbound address translation. This allows PCI
+	 * devices to access anywhere in the AHB address map. Might be regarded
+	 * as a bit dangerous, but let's get things working before we worry
+	 * about that
 	 */
 	oxnas_register_clear_mask(pcie->inbound + IB_ADDR_XLATE_ENABLE,
-	                          ENABLE_IN_ADDR_TRANS);
+				  ENABLE_IN_ADDR_TRANS);
 	wmb();
 
 	/*
@@ -175,8 +174,8 @@ static void __init oxnas_pcie_setup_hw(struct oxnas_pcie *pcie)
 	 *
 	 * Outbound window is what is referred to as "PCI client" region in HRM
 	 *
-	 * Could use the larger alternative address space to get >>64M regions for
-	 * graphics cards etc., but will not bother at this point.
+	 * Could use the larger alternative address space to get >>64M regions
+	 * for graphics cards etc., but will not bother at this point.
 	 *
 	 * IP bug means that AMBA window size must be a power of 2
 	 *
@@ -188,20 +187,21 @@ static void __init oxnas_pcie_setup_hw(struct oxnas_pcie *pcie)
 	 * Ignore mem1, cfg1 and msg windows for now as no obvious use cases for
 	 * 820 that would need them
 	 *
-	 * Probably ideally want no offset between mem0 window start as seen by ARM
-	 * and as seen on PCI bus and get Linux to assign memory regions to PCI
-	 * devices using the same "PCI client" region start address as seen by ARM
+	 * Probably ideally want no offset between mem0 window start as seen by
+	 * ARM and as seen on PCI bus and get Linux to assign memory regions to
+	 * PCI devices using the same "PCI client" region start address as seen
+	 * by ARM
 	 */
 
 	/* Set PCIeA mem0 region to be 1st 16MB of the 64MB PCIeA window */
-	writel_relaxed(pcie->non_mem.start,	pcie->outbound + PCIE_IN0_MEM_ADDR);
-	writel_relaxed(pcie->non_mem.end,	pcie->outbound + PCIE_IN0_MEM_LIMIT);
-	writel_relaxed(pcie->non_mem.start,	pcie->outbound + PCIE_POM0_MEM_ADDR);
+	writel_relaxed(pcie->non_mem.start, pcie->outbound + PCIE_IN0_MEM_ADDR);
+	writel_relaxed(pcie->non_mem.end, pcie->outbound + PCIE_IN0_MEM_LIMIT);
+	writel_relaxed(pcie->non_mem.start, pcie->outbound + PCIE_POM0_MEM_ADDR);
 
 	/* Set PCIeA mem1 region to be 2nd 16MB of the 64MB PCIeA window */
-	writel_relaxed(pcie->pre_mem.start,	pcie->outbound + PCIE_IN1_MEM_ADDR);
-	writel_relaxed(pcie->pre_mem.end,	pcie->outbound + PCIE_IN1_MEM_LIMIT);
-	writel_relaxed(pcie->pre_mem.start,	pcie->outbound + PCIE_POM1_MEM_ADDR);
+	writel_relaxed(pcie->pre_mem.start, pcie->outbound + PCIE_IN1_MEM_ADDR);
+	writel_relaxed(pcie->pre_mem.end, pcie->outbound + PCIE_IN1_MEM_LIMIT);
+	writel_relaxed(pcie->pre_mem.start, pcie->outbound + PCIE_POM1_MEM_ADDR);
 
 	/* Set PCIeA io to be third 16M region of the 64MB PCIeA window*/
 	writel_relaxed(pcie->io.start,	pcie->outbound + PCIE_IN_IO_ADDR);
@@ -222,7 +222,8 @@ static void __init oxnas_pcie_setup_hw(struct oxnas_pcie *pcie)
 	 *  enable bus master
 	 *  enable io
 	 */
-	writel_relaxed(7, pcie->base + PCI_CONFIG_COMMAND_STATUS); /* which is which */
+	writel_relaxed(7, pcie->base + PCI_CONFIG_COMMAND_STATUS);
+	/* which is which */
 	wmb();
 }
 
@@ -232,23 +233,25 @@ static unsigned oxnas_pcie_cfg_to_offset(
 	unsigned int devfn,
 	int where)
 {
-	unsigned int  function = PCI_FUNC(devfn);
-	unsigned int  slot = PCI_SLOT(devfn);
+	unsigned int function = PCI_FUNC(devfn);
+	unsigned int slot = PCI_SLOT(devfn);
 	unsigned char bus_number_offset;
 
 	bus_number_offset = bus_number - sys->busnr;
 
 	/*
 	 * We'll assume for now that the offset, function, slot, bus encoding
-	 * should map onto linear, contiguous addresses in PCIe config space, albeit
-	 * that the majority will be unused as only slot 0 is valid for any PCIe
-	 * bus and most devices have only function 0
+	 * should map onto linear, contiguous addresses in PCIe config space,
+	 * albeit that the majority will be unused as only slot 0 is valid for
+	 * any PCIe bus and most devices have only function 0
 	 *
-	 * Could be that PCIe in fact works by not encoding the slot number into the
-	 * config space address as it's known that only slot 0 is valid. We'll have
-	 * to experiment if/when we get a PCIe switch connected to the PCIe host
+	 * Could be that PCIe in fact works by not encoding the slot number into
+	 * the config space address as it's known that only slot 0 is valid.
+	 * We'll have to experiment if/when we get a PCIe switch connected to
+	 * the PCIe host
 	 */
-	return ((bus_number_offset << 20) | (slot << 15) | (function << 12) | (where &~3));
+	return (bus_number_offset << 20) | (slot << 15) | (function << 12) |
+		(where & ~3);
 }
 
 /* PCI configuration space write function */
@@ -268,13 +271,15 @@ static int oxnas_pcie_wr_conf(struct pci_bus *bus, u32 devfn,
 	if (!pcie->haslink)
 		return PCIBIOS_DEVICE_NOT_FOUND;
 
-	offset = oxnas_pcie_cfg_to_offset(bus->sysdata, bus->number, devfn, where);
+	offset = oxnas_pcie_cfg_to_offset(bus->sysdata, bus->number, devfn,
+					  where);
 
 	value = val << (8 * (where & 3));
-	lanes =  (0xf >> (4-size)) << (where & 3);
+	lanes = (0xf >> (4-size)) << (where & 3);
 	/* it race with mem and io write, but the possibility is low, normally
-	 * all config writes happens at driver initialize stage, wont interleave with
-	 * others. * and many pcie cards use dword (4bytes) access mem/io access only,
+	 * all config writes happens at driver initialize stage, wont interleave
+	 * with others.
+	 * and many pcie cards use dword (4bytes) access mem/io access only,
 	 * so not bother to copy that ugly work-around now. */
 	spin_lock_irqsave(&pcie->lock, flags);
 	set_out_lanes(pcie, lanes);
@@ -305,7 +310,8 @@ static int oxnas_pcie_rd_conf(struct pci_bus *bus, u32 devfn, int where,
 		return PCIBIOS_DEVICE_NOT_FOUND;
 	}
 
-	offset = oxnas_pcie_cfg_to_offset(bus->sysdata, bus->number, devfn, where);
+	offset = oxnas_pcie_cfg_to_offset(bus->sysdata, bus->number, devfn,
+					  where);
 	value = readl_relaxed(pcie->cfgbase + offset);
 	left_bytes = where & 3;
 	right_bytes = 4 - left_bytes - size;
@@ -334,8 +340,8 @@ static int __init oxnas_pcie_setup(int nr, struct pci_sys_data *sys)
 	}
 	/* do not use devm_ioremap_resource, it does not like cfg resource */
 	pcie->cfgbase = devm_ioremap(&pcie->pdev->dev, pcie->cfg.start,
-	                             resource_size(&pcie->cfg));
-	if(!pcie->cfgbase)
+				     resource_size(&pcie->cfg));
+	if (!pcie->cfgbase)
 		return -ENOMEM;
 
 	oxnas_pcie_setup_hw(pcie);
@@ -343,18 +349,17 @@ static int __init oxnas_pcie_setup(int nr, struct pci_sys_data *sys)
 	return 1;
 }
 
-static void __init oxnas_pcie_enable(struct device* dev, struct oxnas_pcie *pcie)
+static void __init oxnas_pcie_enable(struct device *dev, struct oxnas_pcie *pcie)
 {
 	struct hw_pci hw;
 	int i;
 
 	memset(&hw, 0, sizeof(hw));
-	for (i = 0; i < NUM_CONTROLLERS; i++) {
+	for (i = 0; i < NUM_CONTROLLERS; i++)
 		pcie->private_data[i] = pcie;
-	}
 
 	hw.nr_controllers = NUM_CONTROLLERS;
-	/* I think use stack pointer is a bad idea though it is valid in this case */
+/* I think use stack pointer is a bad idea though it is valid in this case */
 	hw.private_data   = pcie->private_data;
 	hw.setup          = oxnas_pcie_setup;
 	hw.map_irq        = of_irq_parse_and_map_pci;
@@ -364,7 +369,8 @@ static void __init oxnas_pcie_enable(struct device* dev, struct oxnas_pcie *pcie
 	pci_common_init_dev(dev, &hw);
 }
 
-void oxnas_pcie_init_shared_hw(struct platform_device *pdev, void __iomem *phybase)
+void oxnas_pcie_init_shared_hw(struct platform_device *pdev,
+			       void __iomem *phybase)
 {
 	struct reset_control *rstc;
 	int ret;
@@ -399,8 +405,7 @@ void oxnas_pcie_init_shared_hw(struct platform_device *pdev, void __iomem *phyba
 
 static int oxnas_pcie_shared_init(struct platform_device *pdev)
 {
-	if (++pcie_shared.refcount == 1)
-	{
+	if (++pcie_shared.refcount == 1) {
 		/* we are the first */
 		struct device_node *np = pdev->dev.of_node;
 		void __iomem *phy = of_iomap(np, 2);
@@ -419,7 +424,7 @@ static int oxnas_pcie_shared_init(struct platform_device *pdev)
 /* maybe we will call it when enter low power state */
 static void oxnas_pcie_shared_deinit(struct platform_device *pdev)
 {
-	if(--pcie_shared.refcount == 0) {
+	if (--pcie_shared.refcount == 0) {
 		/* no cleanup needed */;
 	}
 }
@@ -450,12 +455,14 @@ oxnas_pcie_map_registers(struct platform_device *pdev,
 		return -ENOMEM;
 
 
-	if (of_property_read_u32(np, "plxtech,pcie-outbound-offset", &outbound_ctrl_offset))
+	if (of_property_read_u32(np, "plxtech,pcie-outbound-offset",
+				 &outbound_ctrl_offset))
 		return -EINVAL;
 	/* SYSCRTL is shared by too many drivers, so is mapped by board file */
 	pcie->outbound = IOMEM(OXNAS_SYSCRTL_BASE_VA + outbound_ctrl_offset);
 
-	if (of_property_read_u32(np, "plxtech,pcie-ctrl-offset", &pcie_ctrl_offset))
+	if (of_property_read_u32(np, "plxtech,pcie-ctrl-offset",
+				 &pcie_ctrl_offset))
 		return -EINVAL;
 	pcie->pcie_ctrl = IOMEM(OXNAS_SYSCRTL_BASE_VA + pcie_ctrl_offset);
 
@@ -463,8 +470,8 @@ oxnas_pcie_map_registers(struct platform_device *pdev,
 }
 
 static int __init oxnas_pcie_init_res(struct platform_device *pdev,
-                                      struct oxnas_pcie *pcie,
-                                           struct device_node *np)
+				      struct oxnas_pcie *pcie,
+				      struct device_node *np)
 {
 	struct of_pci_range range;
 	struct of_pci_range_parser parser;
@@ -491,9 +498,8 @@ static int __init oxnas_pcie_init_res(struct platform_device *pdev,
 			}
 
 		}
-		if (restype == 0) {
+		if (restype == 0)
 			of_pci_range_to_resource(&range, np, &pcie->cfg);
-		}
 	}
 
 	/* Get the bus range */
@@ -506,9 +512,8 @@ static int __init oxnas_pcie_init_res(struct platform_device *pdev,
 	}
 
 	pcie->card_reset = of_get_gpio(np, 0);
-	if (pcie->card_reset < 0) {
+	if (pcie->card_reset < 0)
 		dev_info(&pdev->dev, "card reset gpio pin not exists\n");
-	}
 
 	if (of_property_read_u32(np, "plxtech,pcie-hcsl-bit", &pcie->hcsl_en))
 		return -EINVAL;
@@ -528,7 +533,7 @@ static int __init oxnas_pcie_init_res(struct platform_device *pdev,
 }
 
 static void oxnas_pcie_init_hw(struct platform_device *pdev,
-                                     struct oxnas_pcie *pcie)
+			       struct oxnas_pcie *pcie)
 {
 	u32 version_id;
 	int ret;
@@ -536,8 +541,8 @@ static void oxnas_pcie_init_hw(struct platform_device *pdev,
 	clk_prepare_enable(pcie->busclk);
 
 	/* reset PCIe cards use hard-wired gpio pin */
-	if(pcie->card_reset >=0 && !gpio_direction_output(pcie->card_reset, 0))
-	{
+	if (pcie->card_reset >= 0 &&
+	    !gpio_direction_output(pcie->card_reset, 0)) {
 		wmb();
 		mdelay(10);
 		/* must tri-state the pin to pull it up */
@@ -572,7 +577,7 @@ static void oxnas_pcie_init_hw(struct platform_device *pdev,
 
 	/* Set PCIe core into RootCore mode */
 	oxnas_register_value_mask(pcie->pcie_ctrl, PCIE_DEVICE_TYPE_NASK,
-	                          PCIE_DEVICE_TYPE_ROOT);
+				  PCIE_DEVICE_TYPE_ROOT);
 	wmb();
 
 	/* Bring up the PCI core */
@@ -600,10 +605,10 @@ static int __init oxnas_pcie_probe(struct platform_device *pdev)
 		return ret;
 	if (pcie->card_reset >= 0) {
 		ret = gpio_request_one(pcie->card_reset, GPIOF_DIR_IN,
-		                       dev_name(&pdev->dev));
+				       dev_name(&pdev->dev));
 		if (ret) {
 			dev_err(&pdev->dev, "cannot request gpio pin %d\n",
-			        pcie->card_reset);
+				pcie->card_reset);
 			return ret;
 		}
 	}
