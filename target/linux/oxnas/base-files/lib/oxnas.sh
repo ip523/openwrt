@@ -19,6 +19,12 @@ oxnas_board_detect() {
 	*"Shuttle KD20"*)
 		name="kd20"
 		;;
+	*"Pogoplug Pro"*)
+		name="pogoplug-pro"
+		;;
+	*"Pogoplug V3"*)
+		name="pogoplug-v3"
+		;;
 	esac
 
 	[ -z "$name" ] && name="unknown"

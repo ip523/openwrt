@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2014 Daniel Golle <daniel.golle@gmail.com>
  * Copyright (C) 2013 Ma Haijun <mahaijuns@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -10,14 +11,10 @@
 #include "ox820.dtsi"
 
 / {
-	model = "Pogoplug Pro";
+	model = "Pogoplug V3";
 
 	chosen {
-		bootargs = "console=ttyS0,115200n8 root=/dev/sda2 rootfstype=ext4 ubi.mtd=data,512";
-	};
-
-	pcie-controller@47C00000 {
-		status = "okay";
+		bootargs = "console=ttyS0,115200n8 earlyprintk=serial";
 	};
 
 	uart@44200000 {
@@ -70,7 +67,6 @@
 		blue {
 			label = "pogoplug:blue:internal";
 			gpios = <&GPIOA 2 0>;
-
 		};
 
 		orange {
@@ -83,4 +79,5 @@
 			gpios = <&GPIOB 17 1>;
 		};
 	};
+
 };

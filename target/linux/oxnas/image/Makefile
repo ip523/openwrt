@@ -16,6 +16,9 @@ KD20_UBIFS_OPTS = -m 2048 -e 126KiB -c 4096
 POGOPLUGPRO_UBI_OPTS = -m 2048 -p 128KiB -s 512
 POGOPLUGPRO_UBIFS_OPTS = -m 2048 -e 126KiB -c 4096
 
+POGOPLUGV3_UBI_OPTS = -m 2048 -p 128KiB -s 512
+POGOPLUGV3_UBIFS_OPTS = -m 2048 -e 126KiB -c 4096
+
 define sanitize_profile_name
 $(shell echo $(PROFILE) | tr '[:upper:]' '[:lower:]' | sed 's/_/-/g')
 endef
@@ -105,6 +108,9 @@ endef
 
 Image/BuildKernel/Template/POGOPLUGPRO=$(call Image/BuildKernel/Template,pogoplug-pro)
 Image/InstallKernel/Template/POGOPLUGPRO=$(call Image/InstallKernel/Template,pogoplug-pro)
+
+Image/BuildKernel/Template/POGOPLUGV3=$(call Image/BuildKernel/Template,pogoplug-v3)
+Image/InstallKernel/Template/POGOPLUGV3=$(call Image/InstallKernel/Template,pogoplug-v3)
 
 Image/BuildKernel/Template/STG212=$(call Image/BuildKernel/Template,stg212)
 Image/InstallKernel/Template/STG212=$(call Image/InstallKernel/Template,stg212)

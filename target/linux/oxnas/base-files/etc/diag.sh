@@ -12,6 +12,9 @@ get_status_led() {
 	kd20)
 		status_led="kd20:blue:status"
 		;;
+	pogoplug-pro | pogoplug-v3)
+		status_led="pogoplug:blue:internal"
+		;;
 	esac
 }
 
