@@ -15,7 +15,7 @@ CPU_TYPE:=mpcore
 
 MAINTAINER:=Daniel Golle <daniel.golle@gmail.com>
 
-LINUX_VERSION:=3.13.7
+LINUX_VERSION:=3.14.3
 
 include $(INCLUDE_DIR)/target.mk
 
