@@ -210,8 +210,8 @@
 #define CONFIG_EXTRA_ENV_SETTINGS	\
 	"nandboot=" \
 				"ubi part data &&" \
-				"ubifsmount ubi0 &&" \
-				"ubifsload 62000000 /boot/uImage.itb &&" \
+				"ubifsmount ubi0_0 &&" \
+				"ubifsload 62000000 /uImage.itb &&" \
 				"bootm 62000000;" \
 				"nand read 0x62000000 600000 0x400000 &&" \
 				"bootm 62000000;" \
@@ -219,7 +219,7 @@
 				"tftp 62000000 oxnas-rescue.bin &&" \
 				"bootm 62000000;" \
 	"console=" CONFIG_DEFAULT_CONSOLE \
-	"bootargs=ubi.mtd=data,512 root=ubi0:rootfs rootfstype=ubifs " CONFIG_DEFAULT_CONSOLE \
+	"bootargs=ubi.mtd=data ubi.block=0,rootfs root=/dev/ubiblock0_1 rootfstype=squashfs " CONFIG_DEFAULT_CONSOLE \
 	"mtdids=" MTDIDS_DEFAULT "\0" \
 	"mtdparts=" MTDPARTS_DEFAULT "\0" \
 
