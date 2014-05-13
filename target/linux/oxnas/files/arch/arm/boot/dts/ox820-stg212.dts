@@ -14,7 +14,7 @@
 	model = "MitraStar Technology Corp. STG-212";
 
 	chosen {
-		bootargs = "console=ttyS0,115200n8 earlyprintk=serial";
+		bootargs = "ubi.mtd=data ubi.block=0,rootfs rootfstype=squashfs root=/dev/ubiblock0_1 console=ttyS0,115200n8 earlyprintk=serial";
 	};
 
 	uart@44200000 {
