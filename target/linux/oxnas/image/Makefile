@@ -9,6 +9,9 @@ include $(INCLUDE_DIR)/image.mk
 
 STG212_UBI_OPTS = -m 2048 -p 128KiB -s 512
 STG212_UBIFS_OPTS = -m 2048 -e 126KiB -c 4096
+STG212_UBI_TEMPLATE = overlay
+STG212_UBI_KERNELUIMAGE = fit-stg212.itb
+STG212_UBI_ROOTFSIMAGE = root.squashfs
 
 KD20_UBI_OPTS = -m 2048 -p 128KiB -s 512
 KD20_UBIFS_OPTS = -m 2048 -e 126KiB -c 4096
@@ -80,11 +83,12 @@ endef
 
 define Image/Build/squashfs
 	$(call prepare_generic_squashfs,$(KDIR)/root.$(1))
-	dd if=$(KDIR)/root.$(1) of=$(BIN_DIR)/$(IMG_PREFIX)-$(1).bin bs=128k conv=sync
-	( \
-		dd if=$(BIN_DIR)/$(IMG_PREFIX)-$(call sanitize_profile_name)-fit-uImage.itb bs=2048k conv=sync; \
-		dd if=$(KDIR)/root.$(1) bs=128k conv=sync; \
-	) > $(BIN_DIR)/$(IMG_PREFIX)-$(call sanitize_profile_name)-fit-$(1).bin
+
+	dd if=$(KDIR)/root.$(1) of=$(BIN_DIR)/$(IMG_PREFIX)-rootfs.$(1) bs=128k conv=sync
+	sh $(TOPDIR)/scripts/combined-image.sh \
+		$(KDIR)/fit-$(call sanitize_profile_name).itb \
+		$(KDIR)/root.$(1) \
+		$(BIN_DIR)/$(IMG_PREFIX)-$(call sanitize_profile_name)-$(patsubst jffs2-%,jffs2,$(patsubst squashfs-%,squashfs,$(1)))-sysupgrade.bin
 endef
 
 define Image/mkfs/targz
@@ -102,7 +106,7 @@ endef
 define Image/Build/ubi
 
  ifneq ($($(PROFILE)_UBI_OPTS),)
-	$(CP) $(KDIR)/root.ubi $(BIN_DIR)/$(IMG_PREFIX)-$(call sanitize_profile_name)-rootfs.ubi
+	#$(CP) $(KDIR)/root-$(PROFILE).ubi $(BIN_DIR)/$(IMG_PREFIX)-$(call sanitize_profile_name).ubi
  endif
 endef
 

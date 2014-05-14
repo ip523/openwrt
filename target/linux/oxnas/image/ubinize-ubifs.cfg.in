@@ -1,22 +1,23 @@
-[rootfs]
+[boot]
 # Volume mode (other option is static)
 mode=ubi
 # Source image
-image=root.squashfs
+image=@KERNELUIMAGE@
 # Volume ID in UBI image
 vol_id=0
 # Allow for dynamic resize
 vol_type=dynamic
 # Volume name
-vol_name=rootfs
-[rootfs_data]
+vol_name=kernel
+[rootfs]
 # Volume mode (other option is static)
 mode=ubi
+# Source image
+image=@ROOTFSIMAGE@
 # Volume ID in UBI image
 vol_id=1
 # Allow for dynamic resize
 vol_type=dynamic
 # Volume name
-vol_name=rootfs_data
-vol_size=1MiB
+vol_name=rootfs
 vol_flags=autoresize
