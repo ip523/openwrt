@@ -206,18 +206,37 @@
 #define CONFIG_IPADDR			192.168.50.100
 #define CONFIG_SERVERIP			192.168.50.59
 
-/* first try to load /boot/uImage.itb from ubifs in data partition, if that
- * fails, fallback to rescue image stored in boot partition. as a last resort
- * try booting via DHCP/TFTP */
+/* A sane default configuration...
+ * When booting without a valid environment in ubi, first to loading and booting
+ * the kernel image directly above U-Boot, maybe both were loaded there by
+ * another bootloader.
+ * Also use that same offset (0x90000) to load the rescue image later on (by
+ * adding it onto the flash address where U-Boot is supposed to be stored by
+ * the legacy loader, 0x440000, resulting in offset 0x4d0000 on the flash).
+ * When coming up with a valid environment in ubi, first try to load
+ * /boot/uImage.itb from ubifs in data partition, if that fails, fallback to
+ * rescue image stored in boot partition. as a last resort try booting via
+ * DHCP/TFTP.
+ * The loader is supposed to be written to flash at offset 0x440000 and loaded to
+ * RAM at 0x64000000
+ */
 #define CONFIG_EXTRA_ENV_SETTINGS	\
-	"load_kernel_ubifs=ubifsmount ubi0_2; ubifsload 62000000 /uImage.itb;\0" \
-	"load_kernel_rescue=nand read 0x62000000 600000 0x400000;\0" \
-	"load_kernel_dhcp=dhcp tftp 62000000 oxnas-rescue.bin;\0" \
-	"boot_kernel=bootm 62000000;\0" \
+	"load_kernel_ubifs=ubifsmount ubi0_2; ubifsload 0x62000000 /uImage.itb;\0" \
+	"load_kernel_rescue=nand read 0x62000000 0x4d0000 0x400000;\0" \
+	"load_kernel_dhcp=dhcp tftp 0x62000000 oxnas-rescue.bin;\0" \
+	"boot_kernel=bootm 0x62000000;\0" \
 	"boot_ubifs=run load_kernel_ubifs && run boot_kernel;\0" \
 	"boot_rescue=run load_kernel_rescue && run boot_kernel;\0" \
-	"boot_dhcp=run load_kernel_dhcp && run boot_kernel;\0"\
-	"bootcmd=run boot_ubifs; run boot_rescue; run boot_dhcp;\0" \
+	"boot_dhcp=run load_kernel_dhcp && run boot_kernel;\0" \
+	"normalboot=run boot_ubifs; run boot_rescue; run boot_dhcp;\0" \
+	"firstboot=run install_ubi; setenv bootcmd run normalboot; " \
+	"setenv firstboot; setenv install_ubi; saveenv; bootm 0x64090000; " \
+	"run bootcmd; \0" \
+	"install_ubi=ubi remove ubootenv; ubi create ubootenv 0x100000; " \
+	"ubi remove ubootenv2; ubi create ubootenv2 0x100000; " \
+	"ubi remove boot; ubi create boot 0x1000000; " \
+	"ubi remove rootfs; ubi create rootfs 0x100000;\0" \
+	"bootcmd=run firstboot; \0" \
 	"console=" CONFIG_DEFAULT_CONSOLE \
 	"bootargs=" CONFIG_BOOTARGS "\0" \
 	"mtdids=" MTDIDS_DEFAULT "\0" \
