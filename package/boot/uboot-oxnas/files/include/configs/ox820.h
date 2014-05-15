@@ -65,6 +65,7 @@
 						"14m(boot)," \
                                                 "-(data)"
 #define MTDIDS_DEFAULT			"nand0=41000000.nand"
+#define UBIPART_DEFAULT			"data"
 
 /* net */
 #define CONFIG_DESIGNWARE_ETH
@@ -188,14 +189,15 @@
 #define CONFIG_INITRD_TAG
 #define CONFIG_BOOTDELAY		1
 #define CONFIG_ZERO_BOOTDELAY_CHECK
-#define CONFIG_DEFAULT_CONSOLE		"console=ttyS0,115200n8 earlyprintk=serial\0"
+#define CONFIG_DEFAULT_CONSOLE_PARM	"console=ttyS0,115200n8 earlyprintk=serial"
 /* Boot Argument Buffer Size */
 #define CONFIG_SYS_BARGSIZE		CONFIG_SYS_CBSIZE
 /* memtest works on */
 #define CONFIG_SYS_LOAD_ADDR		(CONFIG_SYS_SDRAM_BASE)
 #define CONFIG_SYS_AUTOLOAD		"no"
 
-#define CONFIG_BOOTARGS			"console=ttyS0,115200n8 ubi.mtd=data,512 root=ubi0:rootfs rootfstype=ubifs"
+#define CONFIG_DEFAULT_CONSOLE		CONFIG_DEFAULT_CONSOLE_PARM "\0"
+#define CONFIG_BOOTARGS			CONFIG_DEFAULT_CONSOLE_PARM
 #define CONFIG_BOOTCOMMAND		"run nandboot"
 #define CONFIG_BOOT_RETRY_TIME		-1
 #define CONFIG_RESET_TO_RETRY		60
@@ -208,18 +210,16 @@
  * fails, fallback to rescue image stored in boot partition. as a last resort
  * try booting via DHCP/TFTP */
 #define CONFIG_EXTRA_ENV_SETTINGS	\
-	"nandboot=" \
-				"ubi part data &&" \
-				"ubifsmount ubi0_0 &&" \
-				"ubifsload 62000000 /uImage.itb &&" \
-				"bootm 62000000;" \
-				"nand read 0x62000000 600000 0x400000 &&" \
-				"bootm 62000000;" \
-				"dhcp &&" \
-				"tftp 62000000 oxnas-rescue.bin &&" \
-				"bootm 62000000;" \
+	"load_kernel_ubifs=ubifsmount ubi0_2; ubifsload 62000000 /uImage.itb;\0" \
+	"load_kernel_rescue=nand read 0x62000000 600000 0x400000;\0" \
+	"load_kernel_dhcp=dhcp tftp 62000000 oxnas-rescue.bin;\0" \
+	"boot_kernel=bootm 62000000;\0" \
+	"boot_ubifs=run load_kernel_ubifs && run boot_kernel;\0" \
+	"boot_rescue=run load_kernel_rescue && run boot_kernel;\0" \
+	"boot_dhcp=run load_kernel_dhcp && run boot_kernel;\0"\
+	"bootcmd=run boot_ubifs; run boot_rescue; run boot_dhcp;\0" \
 	"console=" CONFIG_DEFAULT_CONSOLE \
-	"bootargs=ubi.mtd=data ubi.block=0,rootfs root=/dev/ubiblock0_1 rootfstype=squashfs " CONFIG_DEFAULT_CONSOLE \
+	"bootargs=" CONFIG_BOOTARGS "\0" \
 	"mtdids=" MTDIDS_DEFAULT "\0" \
 	"mtdparts=" MTDPARTS_DEFAULT "\0" \
 
@@ -252,12 +252,15 @@
 #define CONFIG_ENV_SIZE			(16 * 1024)
 #endif
 /* CONFIG_BOOT_FROM_SATA end */
+#elif defined(CONFIG_BOOT_FROM_SATA)
 
 #else
 /* generic */
-#define CONFIG_ENV_IS_NOWHERE
+#define CONFIG_ENV_IS_IN_UBI		1
+#define CONFIG_ENV_UBI_PART		UBIPART_DEFAULT
+#define CONFIG_ENV_UBI_VOLUME		"ubootenv"
+#define CONFIG_ENV_UBI_VOLUME_REDUND	"ubootenv2"
 #define CONFIG_ENV_SIZE			(16 * 1024)
-
 #endif
 
 /* allow to overwrite serial and ethaddr */
