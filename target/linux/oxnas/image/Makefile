@@ -9,9 +9,6 @@ include $(INCLUDE_DIR)/image.mk
 
 STG212_UBI_OPTS = -m 2048 -p 128KiB -s 512
 STG212_UBIFS_OPTS = -m 2048 -e 126KiB -c 4096
-STG212_UBI_TEMPLATE = overlay
-STG212_UBI_KERNELUIMAGE = fit-stg212.itb
-STG212_UBI_ROOTFSIMAGE = root.squashfs
 
 KD20_UBI_OPTS = -m 2048 -p 128KiB -s 512
 KD20_UBIFS_OPTS = -m 2048 -e 126KiB -c 4096
@@ -82,17 +79,18 @@ define Image/InstallKernel/Template
 endef
 
 define Image/Build/squashfs
-	$(call prepare_generic_squashfs,$(KDIR)/root.$(1))
-	dd if=$(KDIR)/root.$(1) of=$(BIN_DIR)/$(IMG_PREFIX)-rootfs.$(1) bs=128k conv=sync
 	sh $(TOPDIR)/scripts/combined-image.sh \
 		$(KDIR)/fit-$(call sanitize_profile_name).itb \
 		$(KDIR)/root.$(1) \
 		$(BIN_DIR)/$(IMG_PREFIX)-$(call sanitize_profile_name)-squashfs-sysupgrade.bin
+ ifneq ($($(PROFILE)_UBI_OPTS),)
 	sh $(TOPDIR)/scripts/ubinize-image.sh --uboot-env \
 		$(KDIR)/fit-$(call sanitize_profile_name).itb \
 		$(KDIR)/root.$(1) \
 		$(BIN_DIR)/$(IMG_PREFIX)-$(call sanitize_profile_name)-squashfs-ubinized.bin \
 		$($(PROFILE)_UBI_OPTS)
+ endif
+
 endef
 
 define Image/mkfs/targz
@@ -103,7 +101,6 @@ endef
 define Image/Build/ubifs
 
  ifneq ($($(PROFILE)_UBIFS_OPTS),)
-	$(CP) $(KDIR)/root.ubifs $(BIN_DIR)/$(IMG_PREFIX)-$(call sanitize_profile_name)-rootfs.ubifs
 	sh $(TOPDIR)/scripts/combined-image.sh \
 		$(KDIR)/fit-$(call sanitize_profile_name).itb \
 		$(KDIR)/root.ubifs \
