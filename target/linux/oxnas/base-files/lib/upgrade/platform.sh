@@ -23,16 +23,33 @@ platform_find_volume() {
 	done
 }
 
-platform_init_ubi() {
+platform_restore_config() {
+	data_ubivol="$( platform_find_volume rootfs_data )"
+	mkdir /tmp/new_root
+	mount -t ubifs /dev/$data_ubivol /tmp/new_root
+	mv "$1" "/tmp/new_root/sysupgrade.tgz"
+	umount /tmp/new_root
+	rmdir /tmp/new_root
+}
+
+platform_do_upgrade_ubinized() {
+	local upgrade_image="$1"
+	local conf_tar="$2"
+	local save_config="$3"
 	local mtdnum="$( find_mtd_index "$CI_UBIPART" )"
 	if [ ! "$mtdnum" ]; then
 		echo "cannot find mtd device $CI_UBIPART"
 		return 1;
 	fi
-	local mtddev="mtd${mtdnum}"
-	ubidetach -p "/dev/${mtddev}"
-	sleep 1;
-	ubiformat "/dev/${mtddev}" -y -f "$1"
+	local mtddev="/dev/mtd${mtdnum}"
+	ubidetach -p "${mtddev}"
+	sync
+	ubiformat "${mtddev}" -y -f "$upgrade_image"
+	ubiattach -p "${mtddev}"
+	sync
+	if [ -f "$conf_tar" -a "$save_config" -eq 1 ]; then
+		platform_restore_config "$conf_tar"
+	fi
 	return 0;
 }
 
@@ -40,7 +57,6 @@ platform_do_upgrade_combined_ubi() {
 	local upgrade_image="$1"
 	local conf_tar="$2"
 	local save_config="$3"
-	echo -e "\n\nnow replaced init in do_upgrade $1 $2 $3\n\n"
 	local kern_length_hex=0x$(dd if="$upgrade_image" bs=2 skip=1 count=4 2>/dev/null)
 	local kern_length=$( printf "%u" "$kern_length_hex" )
 	local kern_blocks=$(($kern_length / $CI_BLKSZ))
@@ -48,7 +64,7 @@ platform_do_upgrade_combined_ubi() {
 	local root_length=$( printf "%u" "$root_length_hex" )
 	local root_blocks=$(($root_length / $CI_BLKSZ))
 
-	local boot_ubivol="$( platform_find_volume boot )"
+	local kern_ubivol="$( platform_find_volume boot )"
 	local root_ubivol="$( platform_find_volume rootfs )"
 	local data_ubivol="$( platform_find_volume rootfs_data )"
 
@@ -62,40 +78,36 @@ platform_do_upgrade_combined_ubi() {
 		fi
 	fi
 
-	if [ ! "$boot_ubivol" -o ! "$root_ubivol" ]; then
+	if [ ! "$kern_ubivol" ]; then
 		echo "cannot find needed ubi volumes, flash ubinized image to re-format the NAND"
 		return 1;
 	fi
 
-	# mount /boot ubifs volume
-	mkdir /tmp/boot
-	while ! mount -t ubifs -o rw $boot_ubivol /tmp/boot; do
-		echo "cannot mount boot filesystem $boot_ubivol"
-		return 1;
-	done
+	local ubidev="$( echo $kern_ubivol | cut -d'_' -f1 )"
 
-	local ubidev="$( echo $root_ubivol | cut -d'_' -f1 )"
-
+	# kill rootfs volume
+	if [ "$root_ubivol" ]; then
+		ubirmvol /dev/$ubidev -N rootfs || true
+	fi
 	# kill rootfs_data volume
 	if [ "$data_ubivol" ]; then
 		ubirmvol /dev/$ubidev -N rootfs_data || true
 	fi
 
 	# update root.squashfs
-	if ! ubirsvol /dev/$ubidev -N rootfs -s $root_length; then
-		echo "cannot resize rootfs volume $root_ubivol"
+	if ! ubirsvol /dev/$ubidev -N kernel -s $kern_length; then
+		echo "cannot resize rootfs volume $kern_ubivol"
 		return 1;
 	fi
+	( dd if="$upgrade_image" bs=$CI_BLKSZ skip=1 count=$kern_blocks 2>/dev/null ) | \
+		ubiupdatevol /dev/$kern_ubivol -s $kern_length -
+
+	if ! ubimkvol /dev/$ubidev -N rootfs -s $root_length; then
+	fi
+	root_ubivol="$( platform_find_volume rootfs )"
 
 	dd if="$upgrade_image" bs=$CI_BLKSZ skip=$((1+$kern_blocks)) count=$root_blocks 2>/dev/null | \
 		ubiupdatevol /dev/$root_ubivol -s $root_length -
-
-	# update kernel in /boot filesystem
-	rm /tmp/boot/uImage.itb || true
-	( dd if="$upgrade_image" bs=$CI_BLKSZ skip=1 count=$kern_blocks 2>/dev/null ) > \
-		/tmp/boot/uImage.itb
-	umount /tmp/boot
-	rmdir /tmp/boot
 
 	# re-create rootfs_data
 	if ! ubimkvol /dev/$ubidev -N rootfs_data -m; then
@@ -104,12 +116,7 @@ platform_do_upgrade_combined_ubi() {
 	fi
 
 	if [ -f "$conf_tar" -a "$save_config" -eq 1 ]; then
-		data_ubivol="$( platform_find_volume rootfs_data )"
-		mkdir /tmp/new_root
-		mount -t ubifs /dev/$data_ubivol /tmp/new_root
-		mv "$conf_tar" "/tmp/new_root/sysupgrade.tgz"
-		umount /tmp/new_root
-		rmdir /tmp/new_root
+		platform_restore_config "$conf_tar"
 	fi
 	echo "sysupgrade successfull"
 	return 0
@@ -158,7 +165,6 @@ platform_write_rcstop() {
 		. /lib/upgrade/common.sh
 		. /lib/upgrade/platform.sh
 		cd "$(pwd)"
-		echo -e "\nprocd handed over to /etc/rcStop, running upgrade phase 2\n"
 		platform_do_upgrade_phase2 "$1" "$CONF_TAR" "$SAVE_CONFIG"
 	EOT
 	chmod +x /etc/rcStop
@@ -189,11 +195,12 @@ platform_do_upgrade_phase2() {
 	local board=$(oxnas_board_name)
 	local magic_long="$(get_magic_long "$1")"
 	local magic="$(get_magic_word "$1")"
-	echo -e "\nsurvied kill loop, updating $board with image magics l:$magic_long / w:$magic\n"
+
 	case "$board" in
 	stg-212)
+		# ubinized flash image
 		[ "$magic_long" = "55424923" ] && {
-			platform_init_ubi "$1"
+			platform_do_upgrade_ubinized "$1" "$2" "$3"
 			return 0
 		}
 		# borrow OpenWrt's good-old combine-image format
