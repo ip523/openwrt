@@ -83,12 +83,16 @@ endef
 
 define Image/Build/squashfs
 	$(call prepare_generic_squashfs,$(KDIR)/root.$(1))
-
 	dd if=$(KDIR)/root.$(1) of=$(BIN_DIR)/$(IMG_PREFIX)-rootfs.$(1) bs=128k conv=sync
 	sh $(TOPDIR)/scripts/combined-image.sh \
 		$(KDIR)/fit-$(call sanitize_profile_name).itb \
 		$(KDIR)/root.$(1) \
-		$(BIN_DIR)/$(IMG_PREFIX)-$(call sanitize_profile_name)-$(patsubst jffs2-%,jffs2,$(patsubst squashfs-%,squashfs,$(1)))-sysupgrade.bin
+		$(BIN_DIR)/$(IMG_PREFIX)-$(call sanitize_profile_name)-squashfs-sysupgrade.bin
+	sh $(TOPDIR)/scripts/ubinize-image.sh --uboot-env \
+		$(KDIR)/fit-$(call sanitize_profile_name).itb \
+		$(KDIR)/root.$(1) \
+		$(BIN_DIR)/$(IMG_PREFIX)-$(call sanitize_profile_name)-squashfs-ubinized.bin \
+		$($(PROFILE)_UBI_OPTS)
 endef
 
 define Image/mkfs/targz
@@ -100,14 +104,17 @@ define Image/Build/ubifs
 
  ifneq ($($(PROFILE)_UBIFS_OPTS),)
 	$(CP) $(KDIR)/root.ubifs $(BIN_DIR)/$(IMG_PREFIX)-$(call sanitize_profile_name)-rootfs.ubifs
+	sh $(TOPDIR)/scripts/combined-image.sh \
+		$(KDIR)/fit-$(call sanitize_profile_name).itb \
+		$(KDIR)/root.ubifs \
+		$(BIN_DIR)/$(IMG_PREFIX)-$(call sanitize_profile_name)-ubifs-sysupgrade.bin
+	sh $(TOPDIR)/scripts/ubinize-image.sh --uboot-env \
+		$(KDIR)/fit-$(call sanitize_profile_name).itb \
+		$(KDIR)/root.ubifs \
+		$(BIN_DIR)/$(IMG_PREFIX)-$(call sanitize_profile_name)-ubifs-ubinized.bin \
+		$($(PROFILE)_UBI_OPTS)
  endif
-endef
 
-define Image/Build/ubi
-
- ifneq ($($(PROFILE)_UBI_OPTS),)
-	#$(CP) $(KDIR)/root-$(PROFILE).ubi $(BIN_DIR)/$(IMG_PREFIX)-$(call sanitize_profile_name).ubi
- endif
 endef
 
 Image/BuildKernel/Template/POGOPLUGPRO=$(call Image/BuildKernel/Template,pogoplug-pro)
