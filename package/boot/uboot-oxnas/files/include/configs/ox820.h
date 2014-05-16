@@ -221,21 +221,16 @@
  * RAM at 0x64000000
  */
 #define CONFIG_EXTRA_ENV_SETTINGS	\
-	"load_kernel_ubifs=ubifsmount ubi0_2; ubifsload 0x62000000 /uImage.itb;\0" \
+	"load_kernel_ubi=ubi readvol 0x62000000 kernel;\0" \
 	"load_kernel_rescue=nand read 0x62000000 0x4d0000 0x400000;\0" \
 	"load_kernel_dhcp=dhcp tftp 0x62000000 oxnas-rescue.bin;\0" \
 	"boot_kernel=bootm 0x62000000;\0" \
-	"boot_ubifs=run load_kernel_ubifs && run boot_kernel;\0" \
+	"boot_ubi=run load_kernel_ubi && run boot_kernel;\0" \
 	"boot_rescue=run load_kernel_rescue && run boot_kernel;\0" \
 	"boot_dhcp=run load_kernel_dhcp && run boot_kernel;\0" \
-	"normalboot=run boot_ubifs; run boot_rescue; run boot_dhcp;\0" \
-	"firstboot=run install_ubi; setenv bootcmd run normalboot; " \
-	"setenv firstboot; setenv install_ubi; saveenv; bootm 0x64090000; " \
-	"run bootcmd; \0" \
-	"install_ubi=ubi remove ubootenv; ubi create ubootenv 0x100000; " \
-	"ubi remove ubootenv2; ubi create ubootenv2 0x100000; " \
-	"ubi remove boot; ubi create boot 0x1000000; " \
-	"ubi remove rootfs; ubi create rootfs 0x100000;\0" \
+	"normalboot=run boot_ubi; run boot_rescue; run boot_dhcp;\0" \
+	"firstboot=bootm 0x64090000; setenv bootcmd run normalboot; " \
+	"setenv firstboot; saveenv; run bootcmd; \0" \
 	"bootcmd=run firstboot; \0" \
 	"console=" CONFIG_DEFAULT_CONSOLE \
 	"bootargs=" CONFIG_BOOTARGS "\0" \
