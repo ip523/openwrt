@@ -178,6 +178,14 @@ platform_do_upgrade_combined_ubi() {
 		return 1;
 	fi
 
+	# create rootfs_data for non-ubifs rootfs
+	if [ "$root_fs" != "ubifs" ]; then
+		if ! ubimkvol /dev/$ubidev -N rootfs_data -m; then
+			echo "cannot initialize rootfs_data volume"
+			return 1
+		fi
+	fi
+
 	local kern_ubivol="$( platform_find_volume $ubidev kernel )"
 	local root_ubivol="$( platform_find_volume $ubidev rootfs )"
 
@@ -186,14 +194,6 @@ platform_do_upgrade_combined_ubi() {
 
 	dd if="$upgrade_image" bs=$CI_BLKSZ skip=$((1+$kern_blocks)) count=$root_blocks 2>/dev/null | \
 		ubiupdatevol /dev/$root_ubivol -s $root_length -
-
-	# create rootfs_data for non-ubifs rootfs
-	if [ "$root_fs" != "ubifs" ]; then
-		if ! ubimkvol /dev/$ubidev -N rootfs_data -m; then
-			echo "cannot initialize rootfs_data volume"
-			return 1
-		fi
-	fi
 
 	if [ -f "$conf_tar" -a "$save_config" -eq 1 ]; then
 		platform_restore_config "$conf_tar"
