@@ -222,14 +222,14 @@
  */
 #define CONFIG_EXTRA_ENV_SETTINGS	\
 	"load_kernel_ubi=ubi readvol 0x62000000 kernel;\0" \
-	"load_kernel_rescue=nand read 0x62000000 0x4d0000 0x400000;\0" \
-	"load_kernel_dhcp=dhcp tftp 0x62000000 oxnas-rescue.bin;\0" \
+	"load_kernel_rescue=nand read 0x62000000 0x4e0000 0x400000;\0" \
+	"load_kernel_dhcp=dhcp 0x62000000 oxnas-rescue.bin;\0" \
 	"boot_kernel=bootm 0x62000000;\0" \
 	"boot_ubi=run load_kernel_ubi && run boot_kernel;\0" \
 	"boot_rescue=run load_kernel_rescue && run boot_kernel;\0" \
 	"boot_dhcp=run load_kernel_dhcp && run boot_kernel;\0" \
 	"normalboot=run boot_ubi; run boot_rescue; run boot_dhcp;\0" \
-	"firstboot=bootm 0x64090000; setenv bootcmd run normalboot; " \
+	"firstboot=bootm 0x640a0000; setenv bootcmd run normalboot; " \
 	"setenv firstboot; saveenv; run bootcmd; \0" \
 	"bootcmd=run firstboot; \0" \
 	"console=" CONFIG_DEFAULT_CONSOLE \
