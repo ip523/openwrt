@@ -40,6 +40,7 @@ platform_find_ubi() {
 }
 
 platform_restore_config() {
+	sync
 	local ubidev=$( platform_find_ubi $CI_UBIPART )
 	local ubivol="$( platform_find_volume $ubidev rootfs_data )"
 	[ ! "$ubivol" ] &&
@@ -135,6 +136,8 @@ platform_do_upgrade_combined_ubi() {
 		ubiattach -m "$mtdnum"
 		sync
 		ubidev="$( platform_find_ubi "$CI_UBIPART" )"
+		ubimkvol /dev/$ubidev -n 0 -N ubootenv -s 1MiB
+		ubimkvol /dev/$ubidev -n 1 -N ubootenv2 -s 1MiB
 	fi
 	local kern_ubivol="$( platform_find_volume $ubidev kernel )"
 	local root_ubivol="$( platform_find_volume $ubidev rootfs )"
@@ -185,6 +188,8 @@ platform_do_upgrade_combined_ubi() {
 			return 1
 		fi
 	fi
+
+	sync
 
 	local kern_ubivol="$( platform_find_volume $ubidev kernel )"
 	local root_ubivol="$( platform_find_volume $ubidev rootfs )"
