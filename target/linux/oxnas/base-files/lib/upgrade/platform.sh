@@ -131,7 +131,7 @@ platform_do_upgrade_combined_ubi() {
 		ubidev="$( platform_find_ubi "$CI_UBIPART" )"
 	fi
 	if [ ! "$ubidev" ]; then
-		ubiformat /dev/mtd$mtdnum
+		ubiformat /dev/mtd$mtdnum -y
 		ubiattach -m "$mtdnum"
 		sync
 		ubidev="$( platform_find_ubi "$CI_UBIPART" )"
