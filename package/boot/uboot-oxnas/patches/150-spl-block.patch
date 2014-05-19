@@ -1,20 +1,14 @@
-diff --git a/common/spl/Makefile b/common/spl/Makefile
-index e8144f7..d6076e8 100644
 --- a/common/spl/Makefile
 +++ b/common/spl/Makefile
-@@ -20,6 +20,7 @@ COBJS-$(CONFIG_SPL_NAND_SUPPORT) += spl_nand.o
- COBJS-$(CONFIG_SPL_ONENAND_SUPPORT) += spl_onenand.o
- COBJS-$(CONFIG_SPL_NET_SUPPORT) += spl_net.o
- COBJS-$(CONFIG_SPL_MMC_SUPPORT) += spl_mmc.o
-+COBJS-$(CONFIG_SPL_BLOCK_SUPPORT) += spl_block.o
+@@ -19,4 +19,5 @@ obj-$(CONFIG_SPL_MMC_SUPPORT) += spl_mmc
+ obj-$(CONFIG_SPL_USB_SUPPORT) += spl_usb.o
+ obj-$(CONFIG_SPL_FAT_SUPPORT) += spl_fat.o
+ obj-$(CONFIG_SPL_SATA_SUPPORT) += spl_sata.o
++obj-$(CONFIG_SPL_BLOCK_SUPPORT) += spl_block.o
  endif
- 
- COBJS	:= $(sort $(COBJS-y))
-diff --git a/common/spl/spl.c b/common/spl/spl.c
-index da31457..74177d4 100644
 --- a/common/spl/spl.c
 +++ b/common/spl/spl.c
-@@ -191,6 +191,14 @@ void board_init_r(gd_t *dummy1, ulong dummy2)
+@@ -191,6 +191,14 @@ void board_init_r(gd_t *dummy1, ulong du
  		spl_spi_load_image();
  		break;
  #endif
@@ -29,8 +23,6 @@ index da31457..74177d4 100644
  #ifdef CONFIG_SPL_ETH_SUPPORT
  	case BOOT_DEVICE_CPGMAC:
  #ifdef CONFIG_SPL_ETH_DEVICE
-diff --git a/common/cmd_nvedit.c b/common/cmd_nvedit.c
-index ba9ba16..ad54da7 100644
 --- a/common/cmd_nvedit.c
 +++ b/common/cmd_nvedit.c
 @@ -47,6 +47,7 @@ DECLARE_GLOBAL_DATA_PTR;
@@ -41,24 +33,22 @@ index ba9ba16..ad54da7 100644
  	!defined(CONFIG_ENV_IS_NOWHERE)
  # error Define one of CONFIG_ENV_IS_IN_{EEPROM|FLASH|DATAFLASH|ONENAND|\
  SPI_FLASH|NVRAM|MMC|FAT|REMOTE|UBI} or CONFIG_ENV_IS_NOWHERE
-diff --git a/common/Makefile b/common/Makefile
-index 288690b..4ec4585 100644
 --- a/common/Makefile
 +++ b/common/Makefile
-@@ -49,6 +49,7 @@ COBJS-$(CONFIG_ENV_IS_IN_ONENAND) += env_onenand.o
- COBJS-$(CONFIG_ENV_IS_IN_SPI_FLASH) += env_sf.o
- COBJS-$(CONFIG_ENV_IS_IN_REMOTE) += env_remote.o
- COBJS-$(CONFIG_ENV_IS_IN_UBI) += env_ubi.o
-+COBJS-$(CONFIG_ENV_IS_IN_EXT4) += env_ext4.o
- COBJS-$(CONFIG_ENV_IS_NOWHERE) += env_nowhere.o
+@@ -45,6 +45,7 @@ obj-$(CONFIG_ENV_IS_IN_ONENAND) += env_o
+ obj-$(CONFIG_ENV_IS_IN_SPI_FLASH) += env_sf.o
+ obj-$(CONFIG_ENV_IS_IN_REMOTE) += env_remote.o
+ obj-$(CONFIG_ENV_IS_IN_UBI) += env_ubi.o
++obj-$(CONFIG_ENV_IS_IN_EXT4) += env_ext4.o
+ obj-$(CONFIG_ENV_IS_NOWHERE) += env_nowhere.o
  
  # command
-@@ -190,6 +191,8 @@ COBJS-$(CONFIG_UPDATE_TFTP) += update.o
- COBJS-$(CONFIG_USB_KEYBOARD) += usb_kbd.o
- COBJS-$(CONFIG_CMD_DFU) += cmd_dfu.o
- COBJS-$(CONFIG_CMD_GPT) += cmd_gpt.o
+@@ -191,6 +192,8 @@ obj-$(CONFIG_UPDATE_TFTP) += update.o
+ obj-$(CONFIG_USB_KEYBOARD) += usb_kbd.o
+ obj-$(CONFIG_CMD_DFU) += cmd_dfu.o
+ obj-$(CONFIG_CMD_GPT) += cmd_gpt.o
 +else
-+COBJS-$(CONFIG_SPL_BLOCK_SUPPORT) += cmd_ide.o
++obj-$(CONFIG_SPL_BLOCK_SUPPORT) += cmd_ide.o
  endif
  
  ifdef CONFIG_SPL_BUILD

@@ -368,6 +368,6 @@ int board_eth_init(bd_t *bis)
 
 	writel(value, SYS_CTRL_GMAC_CTRL);
 
-	return designware_initialize(0, MAC_BASE, 0, PHY_INTERFACE_MODE_RGMII);
+	return designware_initialize(MAC_BASE, PHY_INTERFACE_MODE_RGMII);
 }
 

@@ -1,4 +1,5 @@
 #include <config.h>
+#ifndef CONFIG_SPL_BUILD
 
 .globl lowlevel_init
 lowlevel_init:
@@ -16,3 +17,4 @@ lowlevel_init:
 src:	.word CONFIG_SYS_TEXT_BASE
 dest:	.word CONFIG_SRAM_BASE
 
+#endif

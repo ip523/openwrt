@@ -76,6 +76,7 @@
 #define CONFIG_PHY_GIGE
 #define CONFIG_CMD_MII
 #define CONFIG_PHYLIB
+#define CONFIG_PHY_REALTEK
 #define CONFIG_ETHADDR			00:25:31:01:66:5F
 
 /* spl */

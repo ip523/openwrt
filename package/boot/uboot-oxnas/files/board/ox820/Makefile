@@ -2,54 +2,14 @@
 # (C) Copyright 2000-2006
 # Wolfgang Denk, DENX Software Engineering, wd@denx.de.
 #
-# (C) Copyright 2004
-# ARM Ltd.
-# Philippe Robin, <philippe.robin@arm.com>
+# (C) Copyright 2008-2009 Freescale Semiconductor, Inc.
 #
-# See file CREDITS for list of people who contributed to this
-# project.
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License as
-# published by the Free Software Foundation; either version 2 of
-# the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-# MA 02111-1307 USA
+# SPDX-License-Identifier:	GPL-2.0+
 #
 
-include $(TOPDIR)/config.mk
+obj-y += ox820.o
+obj-y += lowlevel_init.o
 
-LIB	= $(obj)lib$(BOARD).o
+obj-$(CONFIG_SPL_BUILD) += spl_start.o
+obj-$(CONFIG_SPL_BUILD) += ddr.o
 
-COBJS-y	+= ox820.o
-
-ifeq ($(CONFIG_SPL_BUILD),y)
-SOBJS-y	+= spl_start.o
-COBJS-y	+= ddr.o
-else
-SOBJS-y	+= lowlevel_init.o
-endif
-
-SRCS	:= $(SOBJS-y:.o=.S) $(COBJS-y:.o=.c)
-COBJS	:= $(addprefix $(obj),$(COBJS-y))
-SOBJS	:= $(addprefix $(obj),$(SOBJS-y))
-
-$(LIB):	$(obj).depend $(COBJS) $(SOBJS)
-	$(call cmd_link_o_target, $(COBJS) $(SOBJS))
-
-#########################################################################
-
-# defines $(obj).depend target
-include $(SRCTREE)/rules.mk
-
-sinclude $(obj).depend
-
-#########################################################################

@@ -67,7 +67,8 @@ static int start_oxnas_usb_ehci(void)
 
 	return 0;
 }
-int ehci_hcd_init(int index, struct ehci_hccr **hccr, struct ehci_hcor **hcor)
+int ehci_hcd_init(int index, enum usb_init_type init, struct ehci_hccr **hccr,
+		  struct ehci_hcor **hcor)
 {
 	start_oxnas_usb_ehci();
 	*hccr = (struct ehci_hccr *)(USB_HOST_BASE + 0x100);
