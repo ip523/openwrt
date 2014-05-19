@@ -13,11 +13,11 @@ STG212_UBIFS_OPTS = -m 2048 -e 126KiB -c 4096
 KD20_UBI_OPTS = -m 2048 -p 128KiB -s 512
 KD20_UBIFS_OPTS = -m 2048 -e 126KiB -c 4096
 
-POGOPLUGPRO_UBI_OPTS = -m 2048 -p 128KiB -s 512
-POGOPLUGPRO_UBIFS_OPTS = -m 2048 -e 126KiB -c 4096
+POGOPLUG_PRO_UBI_OPTS = -m 2048 -p 128KiB -s 512
+POGOPLUG_PRO_UBIFS_OPTS = -m 2048 -e 126KiB -c 4096
 
-POGOPLUGV3_UBI_OPTS = -m 2048 -p 128KiB -s 512
-POGOPLUGV3_UBIFS_OPTS = -m 2048 -e 126KiB -c 4096
+POGOPLUG_V3_UBI_OPTS = -m 2048 -p 128KiB -s 512
+POGOPLUG_V3_UBIFS_OPTS = -m 2048 -e 126KiB -c 4096
 
 define sanitize_profile_name
 $(shell echo $(PROFILE) | tr '[:upper:]' '[:lower:]' | sed 's/_/-/g')
@@ -118,11 +118,11 @@ define Image/Build/ubifs
 
 endef
 
-Image/BuildKernel/Template/POGOPLUGPRO=$(call Image/BuildKernel/Template,pogoplug-pro)
-Image/InstallKernel/Template/POGOPLUGPRO=$(call Image/InstallKernel/Template,pogoplug-pro)
+Image/BuildKernel/Template/POGOPLUG_PRO=$(call Image/BuildKernel/Template,pogoplug-pro)
+Image/InstallKernel/Template/POGOPLUG_PRO=$(call Image/InstallKernel/Template,pogoplug-pro)
 
-Image/BuildKernel/Template/POGOPLUGV3=$(call Image/BuildKernel/Template,pogoplug-v3)
-Image/InstallKernel/Template/POGOPLUGV3=$(call Image/InstallKernel/Template,pogoplug-v3)
+Image/BuildKernel/Template/POGOPLUG_V3=$(call Image/BuildKernel/Template,pogoplug-v3)
+Image/InstallKernel/Template/POGOPLUG_V3=$(call Image/InstallKernel/Template,pogoplug-v3)
 
 Image/BuildKernel/Template/STG212=$(call Image/BuildKernel/Template,stg212)
 Image/InstallKernel/Template/STG212=$(call Image/InstallKernel/Template,stg212)

@@ -5,22 +5,22 @@
 # See /LICENSE for more information.
 #
 
-define Profile/POGOPLUGPRO
+define Profile/POGOPLUG_PRO
   NAME:=PogoPlug Pro
   PACKAGES:= uboot-envtools kmod-usb2-oxnas
 endef
 
-define Profile/POGOPLUGPRO/Description
+define Profile/POGOPLUG_PRO/Description
  Profile with built-in ox820 PogoPlug Pro device-tree
  (board with miniPCIe slot)
 endef
 
-define Profile/POGOPLUGV3
+define Profile/POGOPLUG_V3
   NAME:=PogoPlug V3
   PACKAGES:= uboot-envtools kmod-usb2-oxnas
 endef
 
-define Profile/POGOPLUGV3/Description
+define Profile/POGOPLUG_V3/Description
  Profile with built-in ox820 PogoPlug V3 device-tree
  (board without miniPCIe slot)
 endef
@@ -45,7 +45,7 @@ define Profile/KD20/Description
  Profile with built-in ox820 KD20 device-tree
 endef
 
-$(eval $(call Profile,POGOPLUGPRO))
-$(eval $(call Profile,POGOPLUGV3))
+$(eval $(call Profile,POGOPLUG_PRO))
+$(eval $(call Profile,POGOPLUG_V3))
 $(eval $(call Profile,STG212))
 $(eval $(call Profile,KD20))
