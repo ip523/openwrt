@@ -240,21 +240,12 @@ platform_check_image() {
 	return 1
 }
 
-platform_write_rcstop() {
-	cat <<-EOT > /etc/rcStop
-		#!/bin/sh
-		. /lib/functions.sh
-		. /lib/upgrade/common.sh
-		. /lib/upgrade/platform.sh
-		cd "$(pwd)"
-		platform_do_upgrade_phase2 "$1" "$CONF_TAR" "$SAVE_CONFIG"
-	EOT
-	chmod +x /etc/rcStop
-}
-
 platform_do_upgrade() {
-	platform_write_rcstop "$1"
-	exec kill -USR2 1
+	if [ $$ -ne 1 ]; then
+		echo "not PID 1, upgrade aborted."
+		return 1;
+	fi
+	platform_do_upgrade_phase2 "$1" "$CONF_TAR" "$SAVE_CONFIG"
 }
 
 platform_do_upgrade_phase2() {
