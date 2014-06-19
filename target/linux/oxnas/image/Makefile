@@ -19,6 +19,10 @@ POGOPLUG_PRO_UBIFS_OPTS = -m 2048 -e 126KiB -c 4096
 POGOPLUG_V3_UBI_OPTS = -m 2048 -p 128KiB -s 512
 POGOPLUG_V3_UBIFS_OPTS = -m 2048 -e 126KiB -c 4096
 
+KDIR_TMP:=$(KDIR)/tmp
+VMLINUX:=$(BIN_DIR)/$(IMG_PREFIX)-vmlinux
+UIMAGE:=$(BIN_DIR)/$(IMG_PREFIX)-uImage
+
 define sanitize_profile_name
 $(shell echo $(PROFILE) | tr '[:upper:]' '[:lower:]' | sed 's/_/-/g')
 endef
@@ -83,10 +87,7 @@ define Image/InstallKernel/Template
 endef
 
 define Image/Build/squashfs
-	sh $(TOPDIR)/scripts/combined-image.sh \
-		$(KDIR)/fit-$(call sanitize_profile_name).itb \
-		$(KDIR)/root.$(1) \
-		$(BIN_DIR)/$(IMG_PREFIX)-$(call sanitize_profile_name)-squashfs-sysupgrade.bin
+	$(call Image/Build/SysupgradeNAND,$(call sanitize_profile_name),$(1),$(KDIR)/fit-$(call sanitize_profile_name).itb)
  ifneq ($($(PROFILE)_UBI_OPTS),)
 	sh $(TOPDIR)/scripts/ubinize-image.sh --uboot-env \
 		$(KDIR)/fit-$(call sanitize_profile_name).itb \
@@ -94,7 +95,6 @@ define Image/Build/squashfs
 		$(BIN_DIR)/$(IMG_PREFIX)-$(call sanitize_profile_name)-squashfs-ubinized.bin \
 		$($(PROFILE)_UBI_OPTS)
  endif
-
 endef
 
 define Image/mkfs/targz
@@ -105,10 +105,7 @@ endef
 define Image/Build/ubifs
 
  ifneq ($($(PROFILE)_UBIFS_OPTS),)
-	sh $(TOPDIR)/scripts/combined-image.sh \
-		$(KDIR)/fit-$(call sanitize_profile_name).itb \
-		$(KDIR)/root.ubifs \
-		$(BIN_DIR)/$(IMG_PREFIX)-$(call sanitize_profile_name)-ubifs-sysupgrade.bin
+	$(call Image/Build/SysupgradeNAND,$(call sanitize_profile_name),ubifs,$(KDIR)/fit-$(call sanitize_profile_name).itb)
 	sh $(TOPDIR)/scripts/ubinize-image.sh --uboot-env \
 		$(KDIR)/fit-$(call sanitize_profile_name).itb \
 		$(KDIR)/root.ubifs \

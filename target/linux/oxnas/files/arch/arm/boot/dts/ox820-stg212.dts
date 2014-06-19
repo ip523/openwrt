@@ -35,7 +35,7 @@
 		};
 
 		partition@e00000 {
-			label = "data";
+			label = "ubi";
 			reg = <0x00e00000 0x07200000>;
 		};
 	};
