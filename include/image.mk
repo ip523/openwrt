@@ -151,18 +151,6 @@ ifneq ($(CONFIG_NAND_SUPPORT),)
 endif
 
 ifneq ($(CONFIG_TARGET_ROOTFS_UBIFS),)
-    define Image/mkfs/ubifs/generate
-	$(CP) ./ubinize$(1).cfg $(KDIR)
-	( cd $(KDIR); \
-		$(STAGING_DIR_HOST)/bin/ubinize \
-		$(if $($(PROFILE)_UBI_OPTS), \
-			$(shell echo $($(PROFILE)_UBI_OPTS)), \
-			$(shell echo $(UBI_OPTS)) \
-		) \
-		-o $(KDIR)/root$(1).ubi \
-		ubinize$(1).cfg \
-	)
-    endef
 
     define Image/mkfs/ubifs
 
@@ -182,12 +170,6 @@ ifneq ($(CONFIG_TARGET_ROOTFS_UBIFS),)
 			-d $(TARGET_DIR)
         endif
 	$(call Image/Build,ubifs)
-
-        ifneq ($($(PROFILE)_UBI_OPTS)$(UBI_OPTS),)
-		$(call Image/mkfs/ubifs/generate,)
-		$(if $(wildcard ./ubinize-overlay.cfg),$(call Image/mkfs/ubifs/generate,-overlay))
-        endif
-	$(call Image/Build,ubi)
     endef
 endif
 
