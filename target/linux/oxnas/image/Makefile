@@ -88,13 +88,7 @@ endef
 
 define Image/Build/squashfs
 	$(call Image/Build/SysupgradeNAND,$(call sanitize_profile_name),$(1),$(KDIR)/fit-$(call sanitize_profile_name).itb)
- ifneq ($($(PROFILE)_UBI_OPTS),)
-	sh $(TOPDIR)/scripts/ubinize-image.sh --uboot-env \
-		$(KDIR)/fit-$(call sanitize_profile_name).itb \
-		$(KDIR)/root.$(1) \
-		$(BIN_DIR)/$(IMG_PREFIX)-$(call sanitize_profile_name)-squashfs-ubinized.bin \
-		$($(PROFILE)_UBI_OPTS)
- endif
+	$(call Image/Build/UbinizeImage,$(call sanitize_profile_name),--uboot-env,$(1),$(KDIR)/fit-$(call sanitize_profile_name).itb,$($(PROFILE)_UBI_OPTS))
 endef
 
 define Image/mkfs/targz
@@ -106,11 +100,7 @@ define Image/Build/ubifs
 
  ifneq ($($(PROFILE)_UBIFS_OPTS),)
 	$(call Image/Build/SysupgradeNAND,$(call sanitize_profile_name),ubifs,$(KDIR)/fit-$(call sanitize_profile_name).itb)
-	sh $(TOPDIR)/scripts/ubinize-image.sh --uboot-env \
-		$(KDIR)/fit-$(call sanitize_profile_name).itb \
-		$(KDIR)/root.ubifs \
-		$(BIN_DIR)/$(IMG_PREFIX)-$(call sanitize_profile_name)-ubifs-ubinized.bin \
-		$($(PROFILE)_UBI_OPTS)
+	$(call Image/Build/UbinizeImage,$(call sanitize_profile_name),--uboot-env,ubifs,$(KDIR)/fit-$(call sanitize_profile_name).itb,$($(PROFILE)_UBI_OPTS))
  endif
 
 endef
