@@ -88,7 +88,7 @@ endef
 
 define Image/Build/squashfs
 	$(call Image/Build/SysupgradeNAND,$(call sanitize_profile_name),$(1),$(KDIR)/fit-$(call sanitize_profile_name).itb)
-	$(call Image/Build/UbinizeImage,$(call sanitize_profile_name),--uboot-env,$(1),$(KDIR)/fit-$(call sanitize_profile_name).itb,$($(PROFILE)_UBI_OPTS))
+	$(call Image/Build/UbinizeImage,$(call sanitize_profile_name),--uboot-env --kernel $(KDIR)/fit-$(call sanitize_profile_name).itb,$(1),$($(PROFILE)_UBI_OPTS))
 endef
 
 define Image/mkfs/targz
@@ -100,7 +100,7 @@ define Image/Build/ubifs
 
  ifneq ($($(PROFILE)_UBIFS_OPTS),)
 	$(call Image/Build/SysupgradeNAND,$(call sanitize_profile_name),ubifs,$(KDIR)/fit-$(call sanitize_profile_name).itb)
-	$(call Image/Build/UbinizeImage,$(call sanitize_profile_name),--uboot-env,ubifs,$(KDIR)/fit-$(call sanitize_profile_name).itb,$($(PROFILE)_UBI_OPTS))
+	$(call Image/Build/UbinizeImage,$(call sanitize_profile_name),--uboot-env --kernel $(KDIR)/fit-$(call sanitize_profile_name).itb,ubifs,$($(PROFILE)_UBI_OPTS))
  endif
 
 endef
