@@ -62,20 +62,25 @@ struct plat_gmac_data {
 	struct clk *clk;
 };
 
-int ox820_gmac_init(struct platform_device *pdev)
+void *ox820_gmac_setup(struct platform_device *pdev)
+{
+	struct plat_gmac_data *pdata = pdev->dev.platform_data;
+	pdata->clk = clk_get(&pdev->dev, "gmac");
+	return (void *) pdata->clk;
+};
+
+int ox820_gmac_init(struct platform_device *pdev, void *priv)
 {
 	int ret;
 	unsigned value;
-	struct plat_gmac_data *pdata = pdev->dev.platform_data;
 
 	ret = device_reset(&pdev->dev);
 	if (ret)
 		return ret;
 
-	pdata->clk = clk_get(&pdev->dev, "gmac");
-	if (IS_ERR(pdata->clk))
-		return PTR_ERR(pdata->clk);
-	clk_prepare_enable(pdata->clk);
+	if (IS_ERR(priv))
+		return PTR_ERR(priv);
+	clk_prepare_enable(priv);
 
 	value = readl(SYS_CTRL_GMAC_CTRL);
 
@@ -105,13 +110,12 @@ int ox820_gmac_init(struct platform_device *pdev)
 	return 0;
 }
 
-void ox820_gmac_exit(struct platform_device *pdev)
+void ox820_gmac_exit(struct platform_device *pdev, void *priv)
 {
-	struct plat_gmac_data *pdata = pdev->dev.platform_data;
 	struct reset_control *rstc;
 
-	clk_disable_unprepare(pdata->clk);
-	clk_put(pdata->clk);
+	clk_disable_unprepare(priv);
+	clk_put(priv);
 
 	rstc = reset_control_get(&pdev->dev, NULL);
 	if (!IS_ERR(rstc)) {
@@ -140,6 +144,7 @@ static int __init ox820_ether_init(void)
 	if (!pdata)
 		return -ENOMEM;
 
+	pdata->stmmac.setup = ox820_gmac_setup;
 	pdata->stmmac.init = ox820_gmac_init;
 	pdata->stmmac.exit = ox820_gmac_exit;
 	pdev->dev.platform_data = pdata;
