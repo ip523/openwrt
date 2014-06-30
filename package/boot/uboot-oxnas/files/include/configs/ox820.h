@@ -63,9 +63,9 @@
 #define NAND_ALE_ADDR_PIN		18
 #define MTDPARTS_DEFAULT		"mtdparts=41000000.nand:" \
 						"14m(boot)," \
-                                                "-(data)"
+                                                "-(ubi)"
 #define MTDIDS_DEFAULT			"nand0=41000000.nand"
-#define UBIPART_DEFAULT			"data"
+#define UBIPART_DEFAULT			"ubi"
 
 /* net */
 #define CONFIG_DESIGNWARE_ETH
@@ -210,10 +210,13 @@
  * Also use that same offset (0x90000) to load the rescue image later on (by
  * adding it onto the flash address where U-Boot is supposed to be stored by
  * the legacy loader, 0x440000, resulting in offset 0x4d0000 on the flash).
- * When coming up with a valid environment in ubi, first try to load
- * /boot/uImage.itb from ubifs in data partition, if that fails, fallback to
- * rescue image stored in boot partition. as a last resort try booting via
+ * When coming up with a valid environment in ubi, first try to load the
+ * kernel from a ubi volume kernel, if that fails, fallback to the rescue
+ * image stored in boot partition. As a last resort try booting via
  * DHCP/TFTP.
+ * In case there is no valid environment, first probe for a uimage in ram left
+ * behind by the first bootloader on a tftp boot.
+ * If that fails, switch to normal boot order and save environment.
  * The loader is supposed to be written to flash at offset 0x440000 and loaded to
  * RAM at 0x64000000
  */
