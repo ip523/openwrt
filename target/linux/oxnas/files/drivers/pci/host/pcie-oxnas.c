@@ -421,6 +421,7 @@ static int oxnas_pcie_shared_init(struct platform_device *pdev)
 	}
 }
 
+#if 0
 /* maybe we will call it when enter low power state */
 static void oxnas_pcie_shared_deinit(struct platform_device *pdev)
 {
@@ -428,6 +429,7 @@ static void oxnas_pcie_shared_deinit(struct platform_device *pdev)
 		/* no cleanup needed */;
 	}
 }
+#endif
 
 static int __init
 oxnas_pcie_map_registers(struct platform_device *pdev,
