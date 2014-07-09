@@ -48,7 +48,7 @@ static unsigned long plla_clk_recalc_rate(struct clk_hw *hw,
 	return fin / MHZ * fbdiv / (refdiv * outdiv) / 32768 * MHZ;
 }
 
-static const char * const pll_clk_parents[] = {
+static const char * pll_clk_parents[] = {
 	"oscillator",
 };
 
@@ -158,11 +158,11 @@ static struct clk_ops std_clk_ops = {
 	.is_enabled = std_clk_is_enabled,
 };
 
-static const char * const std_clk_parents[] = {
+static const char * std_clk_parents[] = {
 	"oscillator",
 };
 
-static const char * const eth_parents[] = {
+static const char * eth_parents[] = {
 	"gmacclk",
 };
 
