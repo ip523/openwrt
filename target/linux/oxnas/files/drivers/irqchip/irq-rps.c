@@ -33,6 +33,7 @@ static void rps_mask_irq(struct irq_data *d)
 {
 	struct rps_chip_data *chip_data = irq_data_get_irq_chip_data(d);
 	u32 mask = BIT(d->hwirq);
+
 	iowrite32(mask, chip_data->base + RPS_MASK);
 }
 
@@ -40,6 +41,7 @@ static void rps_unmask_irq(struct irq_data *d)
 {
 	struct rps_chip_data *chip_data = irq_data_get_irq_chip_data(d);
 	u32 mask = BIT(d->hwirq);
+
 	iowrite32(mask, chip_data->base + RPS_UNMASK);
 }
 

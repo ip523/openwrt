@@ -7,6 +7,7 @@
 static inline void oxnas_register_clear_mask(void __iomem *p, unsigned mask)
 {
 	u32 val = readl_relaxed(p);
+
 	val &= ~mask;
 	writel_relaxed(val, p);
 }
@@ -14,6 +15,7 @@ static inline void oxnas_register_clear_mask(void __iomem *p, unsigned mask)
 static inline void oxnas_register_set_mask(void __iomem *p, unsigned mask)
 {
 	u32 val = readl_relaxed(p);
+
 	val |= mask;
 	writel_relaxed(val, p);
 }
@@ -23,6 +25,7 @@ static inline void oxnas_register_value_mask(void __iomem *p,
 {
 	/* TODO sanity check mask & new_value = new_value */
 	u32 val = readl_relaxed(p);
+
 	val &= ~mask;
 	val |= new_value;
 	writel_relaxed(val, p);

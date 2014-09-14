@@ -366,10 +366,11 @@ void workaround5458(struct ata_host *ah)
 {
 	struct sata_oxnas_host_priv *hd = ah->private_data;
 	void __iomem *phy_base = hd->phy_base;
+	u16 rx_control;
 	unsigned i;
 
 	for (i = 0; i < 2; i++) {
-		u16 rx_control = read_cr(phy_base, 0x201d + (i << 8));
+		rx_control = read_cr(phy_base, 0x201d + (i << 8));
 		rx_control &= ~(PH_GAIN_MASK | FR_GAIN_MASK);
 		rx_control |= PH_GAIN << PH_GAIN_OFFSET;
 		rx_control |= (FR_GAIN << FR_GAIN_OFFSET) | USE_INT_SETTING;
@@ -490,6 +491,7 @@ static unsigned int sata_oxnas_qc_issue(struct ata_queued_cmd *qc)
 	/* check the core is idle */
 	if (ioread32(port_base + SATA_COMMAND) & CMD_CORE_BUSY) {
 		int count = 0;
+
 		DPRINTK("core busy for a command on port %d\n",
 			qc->ap->port_no);
 		do {
@@ -557,6 +559,7 @@ void sata_oxnas_checkforhotplug(struct ata_port *ap)
 static inline int sata_oxnas_is_host_frozen(struct ata_host *ah)
 {
 	struct sata_oxnas_host_priv *hd = ah->private_data;
+
 	smp_rmb();
 	return hd->port_in_eh;
 }
@@ -564,12 +567,14 @@ static inline int sata_oxnas_is_host_frozen(struct ata_host *ah)
 static inline u32 sata_oxnas_hostportbusy(struct ata_port *ap)
 {
 	struct sata_oxnas_port_priv *pd = ap->private_data;
+
 	return ioread32(pd->port_base + SATA_COMMAND) & CMD_CORE_BUSY;
 }
 
 static inline u32 sata_oxnas_hostdmabusy(struct ata_port *ap)
 {
 	struct sata_oxnas_port_priv *pd = ap->private_data;
+
 	return ioread32(pd->sgdma_base + SGDMA_STATUS) & SGDMA_BUSY;
 }
 
@@ -649,6 +654,7 @@ static void sata_oxnas_tf_load(struct ata_port *ap,
 	u32 Orb3 = 0;
 	u32 Orb4 = 0;
 	u32 Command_Reg;
+
 	struct sata_oxnas_port_priv *port_priv = ap->private_data;
 	void __iomem *port_base = port_priv->port_base;
 	unsigned int is_addr = tf->flags & ATA_TFLAG_ISADDR;
@@ -667,6 +673,7 @@ static void sata_oxnas_tf_load(struct ata_port *ap,
 	if (tf->ctl & ATA_NIEN) {
 		/* interrupts disabled */
 		u32 mask = (COREINT_END << ap->port_no);
+
 		iowrite32(mask, port_priv->core_base + CORE_INT_DISABLE);
 		sata_oxnas_irq_clear(ap);
 	} else {
@@ -983,6 +990,7 @@ static inline void sata_oxnas_send_sync_escape(struct ata_port *ap)
 static inline void sata_oxnas_clear_CS_error(u32 *base)
 {
 	u32 reg;
+
 	reg = ioread32(base + SATA_CONTROL);
 	reg &= SATA_CTL_ERR_MASK;
 	iowrite32(reg, base + SATA_CONTROL);
@@ -995,6 +1003,7 @@ static inline void sata_oxnas_clear_CS_error(u32 *base)
 static inline void sata_oxnas_clear_reg_access_error(u32 *base)
 {
 	u32 reg;
+
 	reg = ioread32(base + INT_STATUS);
 
 	DPRINTK("ENTER\n");
@@ -1307,6 +1316,7 @@ static void sata_oxnas_port_stop(struct ata_port *ap)
 	struct device *dev = ap->host->dev;
 	struct sata_oxnas_port_priv *pp = ap->private_data;
 	struct sata_oxnas_host_priv *host_priv = ap->host->private_data;
+
 	DPRINTK("ENTER\n");
 	ap->private_data = NULL;
 	if (host_priv->dma_size) {
@@ -1324,6 +1334,7 @@ static void sata_oxnas_post_reset_init(struct ata_port *ap)
 	struct sata_oxnas_port_priv *pd = ap->private_data;
 	uint dev;
 	int no_microcode = 0;
+
 	DPRINTK("ENTER\n");
 	if (no_microcode) {
 		u32 reg;
@@ -1591,6 +1602,7 @@ static irqreturn_t sata_oxnas_interrupt(int irq, void *dev_instance)
 	u32 int_status;
 	irqreturn_t ret = IRQ_NONE;
 	u32 port_no;
+	u32 mask;
 	int bug_present;
 
 	/* loop until there are no more interrupts */
@@ -1608,7 +1620,7 @@ static irqreturn_t sata_oxnas_interrupt(int irq, void *dev_instance)
 		for (port_no = 0; port_no < SATA_OXNAS_MAX_PORTS; ++port_no) {
 			/* check the raw end of command interrupt to see if the
 			 * port is done */
-			u32 mask = (CORERAW_HOST << port_no);
+			mask = (CORERAW_HOST << port_no);
 			if (int_status & mask) {
 				/* this port had an interrupt, clear it */
 				iowrite32(mask, core_base + CORE_INT_CLEAR);
@@ -1825,6 +1837,7 @@ static int sata_oxnas_remove(struct platform_device *ofdev)
 static int sata_oxnas_suspend(struct platform_device *op, pm_message_t state)
 {
 	struct ata_host *host = dev_get_drvdata(&op->dev);
+
 	return ata_host_suspend(host, state);
 }
 

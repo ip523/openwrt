@@ -42,13 +42,13 @@ static unsigned long plla_clk_recalc_rate(struct clk_hw *hw,
 	outdiv += 1;
 	fbdiv = readl_relaxed(SYS_CTRL_PLLA_CTRL1);
 
-	/* seems we will not be here when pll is bypassed, so ignore this 
+	/* seems we will not be here when pll is bypassed, so ignore this
 	 * case */
 
 	return fin / MHZ * fbdiv / (refdiv * outdiv) / 32768 * MHZ;
 }
 
-static const char * pll_clk_parents[] = {
+static const char *pll_clk_parents[] = {
 	"oscillator",
 };
 
@@ -83,7 +83,7 @@ int pllb_clk_enable(struct clk_hw *hw)
 	udelay(10);
 	reset_control_assert(rstc);
 	udelay(10);
-	// set PLL B control information
+	/* set PLL B control information */
 	writel((1 << PLLB_ENSAT) | (1 << PLLB_OUTDIV) | (2 << PLLB_REFDIV),
 				SEC_CTRL_PLLB_CTRL0);
 	reset_control_deassert(rstc);
@@ -136,12 +136,14 @@ struct clk_std {
 static int std_clk_is_enabled(struct clk_hw *hw)
 {
 	struct clk_std *std = to_stdclk(hw);
+
 	return readl_relaxed(SYSCTRL_CLK_STAT) & BIT(std->bit);
 }
 
 static int std_clk_enable(struct clk_hw *hw)
 {
 	struct clk_std *std = to_stdclk(hw);
+
 	writel(BIT(std->bit), SYS_CTRL_CLK_SET_CTRL);
 	return 0;
 }
@@ -149,6 +151,7 @@ static int std_clk_enable(struct clk_hw *hw)
 static void std_clk_disable(struct clk_hw *hw)
 {
 	struct clk_std *std = to_stdclk(hw);
+
 	writel(BIT(std->bit), SYS_CTRL_CLK_CLR_CTRL);
 }
 
@@ -158,11 +161,11 @@ static struct clk_ops std_clk_ops = {
 	.is_enabled = std_clk_is_enabled,
 };
 
-static const char * std_clk_parents[] = {
+static const char *std_clk_parents[] = {
 	"oscillator",
 };
 
-static const char * eth_parents[] = {
+static const char *eth_parents[] = {
 	"gmacclk",
 };
 

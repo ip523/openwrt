@@ -65,6 +65,7 @@ struct plat_gmac_data {
 void *ox820_gmac_setup(struct platform_device *pdev)
 {
 	struct plat_gmac_data *pdata = pdev->dev.platform_data;
+
 	pdata->clk = clk_get(&pdev->dev, "gmac");
 	return (void *) pdata->clk;
 };
@@ -174,7 +175,6 @@ static void __init ox820_timer_init(void)
 {
 	of_clk_init(NULL);
 	clocksource_of_init();
-	return;
 }
 
 void ox820_init_early(void)
