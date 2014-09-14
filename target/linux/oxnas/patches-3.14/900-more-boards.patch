@@ -1,7 +1,7 @@
-Index: linux-3.14.3/arch/arm/boot/dts/Makefile
+Index: linux-3.14.18/arch/arm/boot/dts/Makefile
 ===================================================================
---- linux-3.14.3.orig/arch/arm/boot/dts/Makefile
-+++ linux-3.14.3/arch/arm/boot/dts/Makefile
+--- linux-3.14.18.orig/arch/arm/boot/dts/Makefile
++++ linux-3.14.18/arch/arm/boot/dts/Makefile
 @@ -233,7 +233,10 @@ dtb-$(CONFIG_ARCH_OMAP2PLUS) += omap2420
  	am43x-epos-evm.dtb \
  	dra7-evm.dtb

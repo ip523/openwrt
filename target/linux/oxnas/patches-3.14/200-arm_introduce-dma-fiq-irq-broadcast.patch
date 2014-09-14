@@ -1,7 +1,7 @@
-Index: linux-3.13.7/arch/arm/include/asm/glue-cache.h
+Index: linux-3.14.18/arch/arm/include/asm/glue-cache.h
 ===================================================================
---- linux-3.13.7.orig/arch/arm/include/asm/glue-cache.h
-+++ linux-3.13.7/arch/arm/include/asm/glue-cache.h
+--- linux-3.14.18.orig/arch/arm/include/asm/glue-cache.h
++++ linux-3.14.18/arch/arm/include/asm/glue-cache.h
 @@ -156,11 +156,19 @@ extern inline void nop_dma_unmap_area(co
  #define __cpuc_flush_user_range		__glue(_CACHE,_flush_user_cache_range)
  #define __cpuc_coherent_kern_range	__glue(_CACHE,_coherent_kern_range)
@@ -22,11 +22,11 @@ Index: linux-3.13.7/arch/arm/include/asm/glue-cache.h
  #endif
  
  #endif
-Index: linux-3.13.7/arch/arm/mm/Kconfig
+Index: linux-3.14.18/arch/arm/mm/Kconfig
 ===================================================================
---- linux-3.13.7.orig/arch/arm/mm/Kconfig
-+++ linux-3.13.7/arch/arm/mm/Kconfig
-@@ -844,6 +844,17 @@ config DMA_CACHE_RWFO
+--- linux-3.14.18.orig/arch/arm/mm/Kconfig
++++ linux-3.14.18/arch/arm/mm/Kconfig
+@@ -843,6 +843,17 @@ config DMA_CACHE_RWFO
  	  in hardware, other workarounds are needed (e.g. cache
  	  maintenance broadcasting in software via FIQ).
  
@@ -44,10 +44,10 @@ Index: linux-3.13.7/arch/arm/mm/Kconfig
  config OUTER_CACHE
  	bool
  
-Index: linux-3.13.7/arch/arm/mm/flush.c
+Index: linux-3.14.18/arch/arm/mm/flush.c
 ===================================================================
---- linux-3.13.7.orig/arch/arm/mm/flush.c
-+++ linux-3.13.7/arch/arm/mm/flush.c
+--- linux-3.14.18.orig/arch/arm/mm/flush.c
++++ linux-3.14.18/arch/arm/mm/flush.c
 @@ -291,7 +291,11 @@ void flush_dcache_page(struct page *page
  
  	mapping = page_mapping(page);
