@@ -1,0 +1,455 @@
+--- a/arch/arm/boot/dts/Makefile
++++ b/arch/arm/boot/dts/Makefile
+@@ -119,6 +119,8 @@ dtb-$(CONFIG_ARCH_BCM_5301X) += \
+ 	bcm4709-netgear-r7900.dtb \
+ 	bcm4709-netgear-r8000.dtb \
+ 	bcm4709-tplink-archer-c9-v1.dtb \
++	bcm4709-arris-sbr-ac1900p.dtb \
++	bcm4709-arris-sbr-ac3200p.dtb \
+ 	bcm47094-asus-rt-ac88u.dtb \
+ 	bcm47094-dlink-dir-885l.dtb \
+ 	bcm47094-linksys-panamera.dtb \
+--- /dev/null
++++ b/arch/arm/boot/dts/bcm4709-arris-sbr-ac3200p.dts
+@@ -0,0 +1,219 @@
++/*
++ * Broadcom BCM470X / BCM5301X ARM platform code.
++ * DTS for ARRIS SBR-AC3200P
++ *
++ * Copyright (C) 2022 Yi Wang <wangyi8848@gmail.com>
++ */
++
++/dts-v1/;
++
++#include "bcm4709.dtsi"
++#include "bcm5301x-nand-cs0-bch8.dtsi"
++
++/ {
++	compatible = "arris,sbr-ac3200p", "brcm,bcm4709", "brcm,bcm4708";
++	model = "ARRIS SBR-AC3200P";
++
++	chosen {
++		bootargs = "console=ttyS0,115200";
++	};
++
++	memory@0 {
++		device_type = "memory";
++		reg = <0x00000000 0x08000000>,
++		      <0x88000000 0x08000000>;
++	};
++
++	leds {
++		compatible = "gpio-leds";
++
++		power-white {
++			label = "bcm53xx:white:power";
++			gpios = <&chipcommon 2 GPIO_ACTIVE_LOW>;
++			linux,default-trigger = "default-on";
++		};
++
++		power-amber {
++			label = "bcm53xx:amber:power";
++			gpios = <&chipcommon 3 GPIO_ACTIVE_LOW>;
++		};
++
++		wan-white {
++			label = "bcm53xx:white:wan";
++			gpios = <&chipcommon 8 GPIO_ACTIVE_LOW>;
++			linux,default-trigger = "default-on";
++		};
++
++		wan-amber {
++			label = "bcm53xx:amber:wan";
++			gpios = <&chipcommon 9 GPIO_ACTIVE_HIGH>;
++		};
++
++		5ghz-1 {
++			label = "bcm53xx:white:5ghz-1";
++			gpios = <&chipcommon 12 GPIO_ACTIVE_LOW>;
++		};
++
++		2ghz {
++			label = "bcm53xx:white:2ghz";
++			gpios = <&chipcommon 13 GPIO_ACTIVE_LOW>;
++		};
++
++		wireless {
++			label = "bcm53xx:white:wireless";
++			gpios = <&chipcommon 14 GPIO_ACTIVE_HIGH>;
++		};
++
++		wps {
++			label = "bcm53xx:white:wps";
++			gpios = <&chipcommon 15 GPIO_ACTIVE_HIGH>;
++		};
++
++		5ghz-2 {
++			label = "bcm53xx:white:5ghz-2";
++			gpios = <&chipcommon 16 GPIO_ACTIVE_LOW>;
++		};
++
++		usb3 {
++			label = "bcm53xx:white:usb3";
++			gpios = <&chipcommon 17 GPIO_ACTIVE_LOW>;
++		};
++
++		usb2 {
++			label = "bcm53xx:white:usb2";
++			gpios = <&chipcommon 18 GPIO_ACTIVE_LOW>;
++		};
++	};
++
++	gpio-keys {
++		compatible = "gpio-keys";
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		rfkill {
++			label = "WiFi";
++			linux,code = <KEY_RFKILL>;
++			gpios = <&chipcommon 4 GPIO_ACTIVE_LOW>;
++		};
++
++		wps {
++			label = "WPS";
++			linux,code = <KEY_WPS_BUTTON>;
++			gpios = <&chipcommon 5 GPIO_ACTIVE_LOW>;
++		};
++
++		restart {
++			label = "Reset";
++			linux,code = <KEY_RESTART>;
++			gpios = <&chipcommon 6 GPIO_ACTIVE_LOW>;
++		};
++
++		brightness {
++			label = "Backlight";
++			linux,code = <KEY_BRIGHTNESS_ZERO>;
++			gpios = <&chipcommon 19 GPIO_ACTIVE_LOW>;
++		};
++	};
++};
++
++&pcie0 {
++	#address-cells = <3>;
++	#size-cells = <2>;
++
++	bridge@0,0,0 {
++		reg = <0x0000 0 0 0 0>;
++
++		#address-cells = <3>;
++		#size-cells = <2>;
++
++		wifi@0,1,0 {
++			reg = <0x0000 0 0 0 0>;
++			ieee80211-freq-limit = <5735000 5835000>;
++		};
++	};
++};
++
++&pcie1 {
++	#address-cells = <3>;
++	#size-cells = <2>;
++
++	bridge@1,0,0 {
++		reg = <0x0000 0 0 0 0>;
++
++		#address-cells = <3>;
++		#size-cells = <2>;
++
++		bridge@1,1,0 {
++			reg = <0x0000 0 0 0 0>;
++
++			#address-cells = <3>;
++			#size-cells = <2>;
++
++			bridge@1,2,2 {
++				reg = <0x1000 0 0 0 0>;
++
++				#address-cells = <3>;
++				#size-cells = <2>;
++
++				wifi@1,4,0 {
++					reg = <0x0000 0 0 0 0>;
++					ieee80211-freq-limit = <5170000 5730000>;
++				};
++			};
++		};
++	};
++};
++
++&usb2 {
++	vcc-gpio = <&chipcommon 0 GPIO_ACTIVE_HIGH>;
++};
++
++&usb3 {
++	vcc-gpio = <&chipcommon 0 GPIO_ACTIVE_HIGH>;
++};
++
++&usb3_phy {
++	status = "okay";
++};
++
++&srab {
++	status = "okay";
++
++	ports {
++		port@0 {
++			reg = <0>;
++			label = "lan1";
++		};
++
++		port@1 {
++			reg = <1>;
++			label = "lan2";
++		};
++
++		port@2 {
++			reg = <2>;
++			label = "lan3";
++		};
++
++		port@3 {
++			reg = <3>;
++			label = "lan4";
++		};
++
++		port@4 {
++			reg = <4>;
++			label = "wan";
++		};
++
++		port@8 {
++			reg = <8>;
++			label = "cpu";
++			ethernet = <&gmac2>;
++
++			fixed-link {
++				speed = <1000>;
++				full-duplex;
++			};
++		};
++	};
++};
+--- /dev/null
++++ b/arch/arm/boot/dts/bcm4709-arris-sbr-ac1900p.dts
+@@ -0,0 +1,219 @@
++/*
++ * Broadcom BCM470X / BCM5301X ARM platform code.
++ * DTS for ARRIS SBR-AC1900P
++ *
++ * Copyright (C) 2022 Yi Wang <wangyi8848@gmail.com>
++ */
++
++/dts-v1/;
++
++#include "bcm4709.dtsi"
++#include "bcm5301x-nand-cs0-bch8.dtsi"
++
++/ {
++	compatible = "arris,sbr-ac1900p", "brcm,bcm4709", "brcm,bcm4708";
++	model = "ARRIS SBR-AC1900P";
++
++	chosen {
++		bootargs = "console=ttyS0,115200";
++	};
++
++	memory@0 {
++		device_type = "memory";
++		reg = <0x00000000 0x08000000>,
++		      <0x88000000 0x08000000>;
++	};
++
++	leds {
++		compatible = "gpio-leds";
++
++		power-white {
++			label = "bcm53xx:white:power";
++			gpios = <&chipcommon 2 GPIO_ACTIVE_LOW>;
++			linux,default-trigger = "default-on";
++		};
++
++		power-amber {
++			label = "bcm53xx:amber:power";
++			gpios = <&chipcommon 3 GPIO_ACTIVE_LOW>;
++		};
++
++		wan-white {
++			label = "bcm53xx:white:wan";
++			gpios = <&chipcommon 8 GPIO_ACTIVE_LOW>;
++			linux,default-trigger = "default-on";
++		};
++
++		wan-amber {
++			label = "bcm53xx:amber:wan";
++			gpios = <&chipcommon 9 GPIO_ACTIVE_HIGH>;
++		};
++
++		5ghz-1 {
++			label = "bcm53xx:white:5ghz-1";
++			gpios = <&chipcommon 12 GPIO_ACTIVE_LOW>;
++		};
++
++		2ghz {
++			label = "bcm53xx:white:2ghz";
++			gpios = <&chipcommon 13 GPIO_ACTIVE_LOW>;
++		};
++
++		wireless {
++			label = "bcm53xx:white:wireless";
++			gpios = <&chipcommon 14 GPIO_ACTIVE_HIGH>;
++		};
++
++		wps {
++			label = "bcm53xx:white:wps";
++			gpios = <&chipcommon 15 GPIO_ACTIVE_HIGH>;
++		};
++
++		5ghz-2 {
++			label = "bcm53xx:white:5ghz-2";
++			gpios = <&chipcommon 16 GPIO_ACTIVE_LOW>;
++		};
++
++		usb3 {
++			label = "bcm53xx:white:usb3";
++			gpios = <&chipcommon 17 GPIO_ACTIVE_LOW>;
++		};
++
++		usb2 {
++			label = "bcm53xx:white:usb2";
++			gpios = <&chipcommon 18 GPIO_ACTIVE_LOW>;
++		};
++	};
++
++	gpio-keys {
++		compatible = "gpio-keys";
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		rfkill {
++			label = "WiFi";
++			linux,code = <KEY_RFKILL>;
++			gpios = <&chipcommon 4 GPIO_ACTIVE_LOW>;
++		};
++
++		wps {
++			label = "WPS";
++			linux,code = <KEY_WPS_BUTTON>;
++			gpios = <&chipcommon 5 GPIO_ACTIVE_LOW>;
++		};
++
++		restart {
++			label = "Reset";
++			linux,code = <KEY_RESTART>;
++			gpios = <&chipcommon 6 GPIO_ACTIVE_LOW>;
++		};
++
++		brightness {
++			label = "Backlight";
++			linux,code = <KEY_BRIGHTNESS_ZERO>;
++			gpios = <&chipcommon 19 GPIO_ACTIVE_LOW>;
++		};
++	};
++};
++
++&pcie0 {
++	#address-cells = <3>;
++	#size-cells = <2>;
++
++	bridge@0,0,0 {
++		reg = <0x0000 0 0 0 0>;
++
++		#address-cells = <3>;
++		#size-cells = <2>;
++
++		wifi@0,1,0 {
++			reg = <0x0000 0 0 0 0>;
++			ieee80211-freq-limit = <5735000 5835000>;
++		};
++	};
++};
++
++&pcie1 {
++	#address-cells = <3>;
++	#size-cells = <2>;
++
++	bridge@1,0,0 {
++		reg = <0x0000 0 0 0 0>;
++
++		#address-cells = <3>;
++		#size-cells = <2>;
++
++		bridge@1,1,0 {
++			reg = <0x0000 0 0 0 0>;
++
++			#address-cells = <3>;
++			#size-cells = <2>;
++
++			bridge@1,2,2 {
++				reg = <0x1000 0 0 0 0>;
++
++				#address-cells = <3>;
++				#size-cells = <2>;
++
++				wifi@1,4,0 {
++					reg = <0x0000 0 0 0 0>;
++					ieee80211-freq-limit = <5170000 5730000>;
++				};
++			};
++		};
++	};
++};
++
++&usb2 {
++	vcc-gpio = <&chipcommon 0 GPIO_ACTIVE_HIGH>;
++};
++
++&usb3 {
++	vcc-gpio = <&chipcommon 0 GPIO_ACTIVE_HIGH>;
++};
++
++&usb3_phy {
++	status = "okay";
++};
++
++&srab {
++	status = "okay";
++
++	ports {
++		port@0 {
++			reg = <0>;
++			label = "lan1";
++		};
++
++		port@1 {
++			reg = <1>;
++			label = "lan2";
++		};
++
++		port@2 {
++			reg = <2>;
++			label = "lan3";
++		};
++
++		port@3 {
++			reg = <3>;
++			label = "lan4";
++		};
++
++		port@4 {
++			reg = <4>;
++			label = "wan";
++		};
++
++		port@8 {
++			reg = <8>;
++			label = "cpu";
++			ethernet = <&gmac2>;
++
++			fixed-link {
++				speed = <1000>;
++				full-duplex;
++			};
++		};
++	};
++};

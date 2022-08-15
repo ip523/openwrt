@@ -45,6 +45,10 @@ bcm53xx_setup_macs()
 		etXmacaddr=$(nvram get et1macaddr)
 		offset=1
 		;;
+	arris,sbr-ac1900p | \
+	arris,sbr-ac3200p)
+		etXmacaddr=$(nvram get et2macaddr)
+		;;
 	dlink,dir-885l | \
 	linksys,panamera | \
 	netgear,r7900 | \

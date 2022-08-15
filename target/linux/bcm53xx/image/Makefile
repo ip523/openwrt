@@ -426,6 +426,20 @@ define Device/phicomm_k3
 endef
 TARGET_DEVICES += phicomm_k3
 
+define Device/arris-sbr-ac1900p
+  DEVICE_VENDOR := ARRIS
+  DEVICE_MODEL := SBR-AC1900P
+  DEVICE_PACKAGES := $(USB3_PACKAGES)
+endef
+TARGET_DEVICES += arris-sbr-ac1900p
+
+define Device/arris-sbr-ac3200p
+  DEVICE_VENDOR := ARRIS
+  DEVICE_MODEL := SBR-AC3200P
+  DEVICE_PACKAGES := $(BRCMFMAC_43602A1) $(USB3_PACKAGES)
+endef
+TARGET_DEVICES += arris-sbr-ac3200p
+
 define Device/tenda_ac9
   DEVICE_VENDOR := Tenda
   DEVICE_MODEL := AC9
